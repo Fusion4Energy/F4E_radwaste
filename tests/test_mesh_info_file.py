@@ -1,8 +1,11 @@
+import os
 import unittest
 from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 
 from f4e_radwaste.constants import (
     CoordinateType,
@@ -125,3 +128,41 @@ class MeshInfoFileTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             with patch("builtins.open", return_value=StringIO("")):
                 read_file("test.dat")
+
+    def test_save_and_load_cartesian(self):
+        with patch("builtins.open", return_value=StringIO(EXAMPLE_MESHINFO_CART)):
+            mesh_info = read_file("test.dat")
+
+        folder_path = Path("")
+        mesh_info.save(folder_path)
+
+        loaded_mesh_info = DataMeshInfo.load(folder_path)
+
+        self.assertIsInstance(loaded_mesh_info, DataMeshInfo)
+        pd.testing.assert_frame_equal(
+            mesh_info.data_mass._dataframe, loaded_mesh_info.data_mass._dataframe
+        )
+        self.assertEqual(loaded_mesh_info.coordinates, CoordinateType.CARTESIAN)
+        np.testing.assert_array_equal(mesh_info.vector_i, loaded_mesh_info.vector_i)
+
+        os.remove(folder_path / "DataMeshInfo.json")
+        os.remove(folder_path / "DataMass.hdf5")
+
+    def test_save_and_load_cylindrical(self):
+        with patch("builtins.open", return_value=StringIO(EXAMPLE_MESHINFO_CYL)):
+            mesh_info = read_file("test.dat")
+
+        folder_path = Path("")
+        mesh_info.save(folder_path)
+
+        loaded_mesh_info = DataMeshInfo.load(folder_path)
+
+        self.assertIsInstance(loaded_mesh_info, DataMeshInfo)
+        pd.testing.assert_frame_equal(
+            mesh_info.data_mass._dataframe, loaded_mesh_info.data_mass._dataframe
+        )
+        self.assertEqual(loaded_mesh_info.coordinates, CoordinateType.CYLINDRICAL)
+        np.testing.assert_array_equal(mesh_info.vector_i, loaded_mesh_info.vector_i)
+
+        os.remove(folder_path / "DataMeshInfo.json")
+        os.remove(folder_path / "DataMass.hdf5")

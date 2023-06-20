@@ -1,4 +1,7 @@
+import os
 import unittest
+from pathlib import Path
+
 import pandas as pd
 
 from f4e_radwaste.constants import (
@@ -143,3 +146,24 @@ class DataFrameValidatorTests(unittest.TestCase):
             decay_times=[1], voxels=[1], cells=[1], isotopes=["A"]
         )
         self.assertTrue(filtered_df.equals(expected_df))
+
+    def test_save_and_load_dataframe_to_hdf5(self):
+        # Save the dataframe
+        folder_path = Path("")
+        self.data_absolute_activity.save_dataframe_to_hdf5(folder_path)
+
+        # Two Dataframes, one read directly and one loaded with the function
+        loaded_data = DataAbsoluteActivity.load(folder_path)
+        read_df = pd.read_hdf(
+            folder_path / "DataAbsoluteActivity.hdf5", key="dataframe"
+        )
+        read_df = pd.DataFrame(read_df)
+
+        # Assertion
+        pd.testing.assert_frame_equal(
+            self.data_absolute_activity._dataframe, loaded_data._dataframe
+        )
+        pd.testing.assert_frame_equal(self.data_absolute_activity._dataframe, read_df)
+
+        # Clean the file
+        os.remove(folder_path / "DataAbsoluteActivity.hdf5")

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import pandas as pd
 
@@ -7,7 +8,7 @@ class DataFrameValidator(ABC):
     EXPECTED_INDEX_NAMES = []
     EXPECTED_COLUMNS = []
 
-    def __init__(self, dataframe):
+    def __init__(self, dataframe: pd.DataFrame):
         self._dataframe = dataframe
         self._validate_dataframe_format()
 
@@ -31,6 +32,18 @@ class DataFrameValidator(ABC):
 
         for key, filter_values in kwargs.items():
             if filter_values is not None:
+                # filter_values = set(filter_values)  # TODO: possible perf improvement
                 mask &= self._dataframe.index.get_level_values(key).isin(filter_values)
 
         return self._dataframe.loc[mask]
+
+    def save_dataframe_to_hdf5(self, folder_path: Path):
+        self._dataframe.to_hdf(
+            folder_path / f"{self.__class__.__name__}.hdf5", key="dataframe", mode="w"
+        )
+
+    @classmethod
+    def load(cls, folder_path: Path):
+        dataframe = pd.read_hdf(folder_path / f"{cls.__name__}.hdf5", key="dataframe")
+        dataframe = pd.DataFrame(dataframe)
+        return cls(dataframe)
