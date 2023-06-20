@@ -49,6 +49,6 @@ class MeshInfoFilePerformanceTests(unittest.TestCase):
         self.assertAlmostEqual(expected_mass, result_mass)
         # Check that our manual correction was also right by calculating the volume
         # from zero by hand
-        manual_volume = np.pi * (3.75 ** 2) * 5 * 7.9300
+        manual_volume = np.pi * (3.75**2) * 5 * 7.9300
         # I reduce the precision, surely a harmless decimals thing
         self.assertAlmostEqual(manual_volume, expected_mass, places=2)

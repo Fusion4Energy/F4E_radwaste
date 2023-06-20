@@ -4,15 +4,6 @@ from pathlib import Path
 from f4e_radwaste.readers.dgs_file import read_file
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-
 class DgsFilePerformanceTests(unittest.TestCase):
     def setUp(self) -> None:
         current_file = Path(__file__)

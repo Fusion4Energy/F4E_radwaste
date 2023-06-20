@@ -118,7 +118,7 @@ class MeshInfoFileTests(unittest.TestCase):
         result_mass_last_value = result.data_mass.get_filtered_dataframe(
             voxels=[4], cells=[140656], materials=[253]
         )[KEY_MASS_GRAMS].values[0]
-        expected_mass_last_value = 3.38693E+03 * 0.20000 * 1.3966 / (2 * np.pi)
+        expected_mass_last_value = 3.38693e03 * 0.20000 * 1.3966 / (2 * np.pi)
         self.assertAlmostEqual(result_mass_last_value, expected_mass_last_value)
 
     def test_read_file_no_mesh_found(self):
