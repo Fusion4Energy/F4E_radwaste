@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 import pandas as pd
 
 from f4e_radwaste.constants import (
@@ -10,14 +11,21 @@ from f4e_radwaste.constants import (
     KEY_ABSOLUTE_ACTIVITY,
     KEY_MASS_GRAMS,
     KEY_MATERIAL,
+    KEY_LDF_DECLARATION,
+    KEY_TFA_DECLARATION,
+    KEY_TFA_CLASS,
+    KEY_LMA,
+    KEY_CSA_DECLARATION,
+    KEY_HALF_LIFE,
 )
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
+from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.post_processing import group_data_by_time_and_materials
 
 
-class PostProcessingTests(unittest.TestCase):
+class GroupDataByTimeAndMaterialsTests(unittest.TestCase):
     def setUp(self) -> None:
         # DataAbsoluteActivity
         data = {
@@ -46,6 +54,7 @@ class PostProcessingTests(unittest.TestCase):
         # Second decay time, material 10 only
         data = {
             KEY_VOXEL: [1],
+            KEY_MASS_GRAMS: [2],
             "H3": [0.1 / 2],
         }
         df = pd.DataFrame(data)
@@ -65,6 +74,7 @@ class PostProcessingTests(unittest.TestCase):
         # First decay time, all materials
         data = {
             KEY_VOXEL: [1, 2],
+            KEY_MASS_GRAMS: [5, 10],
             "Fe55": [1 / (2 + 3), 0],
             "H3": [(0.5 + 1.5) / (2 + 3), 2 / 10],
         }
@@ -87,3 +97,33 @@ class PostProcessingTests(unittest.TestCase):
             self.data_absolute_activity, self.data_mass, 15, [999]
         )
         self.assertIsNone(data_mesh_activity)
+
+
+class ClassifyWasteTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # DataIsotopeCriteria
+        data = {
+            KEY_ISOTOPE: ["H3", "Be10", "C14", "Na22", "Al26"],
+            KEY_HALF_LIFE: [3.89e08, 5.05e13, 1.81e11, 8.21e07, 2.27e13],
+            KEY_CSA_DECLARATION: [10, 0.0001, 10, 1, 1],
+            KEY_LMA: [2e5, 5.10e03, 9.2e4, 1.3e8, np.nan],
+            KEY_TFA_CLASS: [3, 3, 3, 1, 1],
+            KEY_TFA_DECLARATION: [1, 0.01, 0.1, 0.1, 0.1],
+            KEY_LDF_DECLARATION: [10, 1, 1, np.nan, np.nan],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_ISOTOPE], inplace=True)
+        self.data_isotope_criteria = DataIsotopeCriteria(df)
+
+        # DataMeshActivity
+        data = {
+            KEY_VOXEL: [1, 2, 3, 4],
+            "H3": [0.1235, 0.51255, 1.32e3, 0.432],
+            "Be10": [0.3333, 0.555, 5.32e3, 0.444],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_VOXEL], inplace=True)
+        self.data_mesh_activity = DataMeshActivity(df)
+
+    def test_classify_waste(self):
+        self.assertTrue(False)

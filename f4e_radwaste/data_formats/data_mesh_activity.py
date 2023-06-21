@@ -2,13 +2,13 @@ from typing import Optional, List
 
 import pandas as pd
 
-from f4e_radwaste.constants import KEY_VOXEL
+from f4e_radwaste.constants import KEY_VOXEL, KEY_MASS_GRAMS
 from f4e_radwaste.data_formats.dataframe_validator import DataFrameValidator
 
 
 class DataMeshActivity(DataFrameValidator):
     EXPECTED_INDEX_NAMES = [KEY_VOXEL]
-    EXPECTED_COLUMNS = []
+    EXPECTED_COLUMNS = [KEY_MASS_GRAMS]
 
     def get_filtered_dataframe(
         self, voxels: Optional[List[int]] = None

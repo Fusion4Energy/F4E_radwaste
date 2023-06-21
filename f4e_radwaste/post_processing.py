@@ -7,6 +7,7 @@ from f4e_radwaste.constants import (
     KEY_MASS_GRAMS,
 )
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
+from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 
@@ -43,4 +44,13 @@ def group_data_by_time_and_materials(
     voxel_activity_dataframe = voxel_specific_activity.unstack(fill_value=0.0)
     voxel_activity_dataframe.columns.name = None
 
+    # Add the mass information to the dataframe
+    voxel_activity_dataframe.insert(0, KEY_MASS_GRAMS, voxel_masses)
+
     return DataMeshActivity(voxel_activity_dataframe)
+
+
+def classify_waste(
+    mesh_activity: DataMeshActivity, isotope_criteria: DataIsotopeCriteria
+):
+    pass
