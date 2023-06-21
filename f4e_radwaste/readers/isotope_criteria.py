@@ -39,7 +39,7 @@ def read_file(path_to_criteria) -> DataIsotopeCriteria:
         criteria_data[KEY_HALF_LIFE].append(parameters[0])
         criteria_data[KEY_CSA_DECLARATION].append(parameters[1])
         criteria_data[KEY_LMA].append(parameters[2])
-        criteria_data[KEY_TFA_CLASS].append(parameters[3])
+        criteria_data[KEY_TFA_CLASS].append(int(parameters[3]))
         criteria_data[KEY_TFA_DECLARATION].append(parameters[4])
         criteria_data[KEY_LDF_DECLARATION].append(parameters[5])
 
