@@ -9,7 +9,7 @@ class DataFrameValidator(ABC):
     EXPECTED_COLUMNS = []
 
     def __init__(self, dataframe: pd.DataFrame):
-        self._dataframe = dataframe
+        self._dataframe = dataframe.sort_index()
         self._validate_dataframe_format()
 
     def _validate_dataframe_format(self):

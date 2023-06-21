@@ -15,6 +15,8 @@ KEY_TFA_CLASS = "tfa_class"
 KEY_TFA_DECLARATION = "tfa_declaration"
 KEY_LDF_DECLARATION = "ldf_declaration"
 
+KEY_SPECIFIC_ACTIVITY = "Activity [Bq/g]"
+
 
 class CoordinateType(Enum):
     CARTESIAN = "cartesian"

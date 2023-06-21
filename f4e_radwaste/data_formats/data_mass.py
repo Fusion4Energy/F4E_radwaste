@@ -27,3 +27,8 @@ class DataMass(DataFrameValidator):
         }
 
         return super().get_filtered_dataframe(**filters)
+
+    def get_cells_from_materials(self, materials: list) -> List[int]:
+        filtered_dataframe = self.get_filtered_dataframe(materials=materials)
+        cells = filtered_dataframe.index.unique(level=KEY_CELL).values
+        return list(cells)

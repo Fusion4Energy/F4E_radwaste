@@ -54,3 +54,7 @@ class DataMassTests(unittest.TestCase):
             voxels=[1, 2], materials=[20, 40]
         )
         self.assertTrue(filtered_df.equals(expected_df))
+
+    def test_get_cells_from_materials(self):
+        cells = self.data_mass.get_cells_from_materials(materials=[10, 20])
+        self.assertListEqual([11, 12], cells)
