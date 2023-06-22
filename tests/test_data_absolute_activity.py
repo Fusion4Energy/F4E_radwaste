@@ -2,6 +2,7 @@ import os
 import unittest
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from f4e_radwaste.constants import (
@@ -64,21 +65,10 @@ class DataFrameValidatorTests(unittest.TestCase):
         validator = DataAbsoluteActivity(df)
         self.assertIsInstance(validator, DataAbsoluteActivity)
 
-    # def test_get_value(self):
-    #     # Test retrieving a value from the DataFrame using get_value method
-    #     value = self.validator.get_value(time=1, voxel=2, cell=1, isotope="B")
-    #     expected_value = 1.0
-    #     self.assertEqual(value, expected_value)
-    #
-    # def test_get_value_invalid_index(self):
-    #     # Test retrieving a value with an invalid index combination
-    #     with self.assertRaises(KeyError):
-    #         self.validator.get_value(time=2, voxel=2, cell=1, isotope="A")
-    #
-    # def test_get_value_missing_index(self):
-    #     # Test retrieving a value with a missing index
-    #     with self.assertRaises(KeyError):
-    #         self.validator.get_value(time="", voxel=1, cell=1, isotope="A")
+    def test_decay_times(self):
+        np.testing.assert_array_equal(
+            self.data_absolute_activity.decay_times, np.array([1, 2])
+        )
 
     def test_get_filtered_dataframe_by_decay_times(self):
         # Expected dataframe
@@ -167,3 +157,19 @@ class DataFrameValidatorTests(unittest.TestCase):
 
         # Clean the file
         os.remove(folder_path / "DataAbsoluteActivity.hdf5")
+
+    # def test_get_value(self):
+    #     # Test retrieving a value from the DataFrame using get_value method
+    #     value = self.validator.get_value(time=1, voxel=2, cell=1, isotope="B")
+    #     expected_value = 1.0
+    #     self.assertEqual(value, expected_value)
+    #
+    # def test_get_value_invalid_index(self):
+    #     # Test retrieving a value with an invalid index combination
+    #     with self.assertRaises(KeyError):
+    #         self.validator.get_value(time=2, voxel=2, cell=1, isotope="A")
+    #
+    # def test_get_value_missing_index(self):
+    #     # Test retrieving a value with a missing index
+    #     with self.assertRaises(KeyError):
+    #         self.validator.get_value(time="", voxel=1, cell=1, isotope="A")

@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+import numpy as np
 import pandas as pd
 
 from f4e_radwaste.constants import KEY_MASS_GRAMS, KEY_CELL, KEY_MATERIAL, KEY_VOXEL
@@ -32,3 +33,7 @@ class DataMass(DataFrameValidator):
         filtered_dataframe = self.get_filtered_dataframe(materials=materials)
         cells = filtered_dataframe.index.unique(level=KEY_CELL).values
         return list(cells)
+
+    @property
+    def materials(self) -> np.ndarray:
+        return self._dataframe.index.unique(level=KEY_MATERIAL).values

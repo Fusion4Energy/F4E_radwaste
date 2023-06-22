@@ -1,5 +1,6 @@
 import unittest
 
+import numpy as np
 import pandas as pd
 
 from f4e_radwaste.constants import KEY_VOXEL, KEY_MATERIAL, KEY_CELL, KEY_MASS_GRAMS
@@ -58,3 +59,8 @@ class DataMassTests(unittest.TestCase):
     def test_get_cells_from_materials(self):
         cells = self.data_mass.get_cells_from_materials(materials=[10, 20])
         self.assertListEqual([11, 12], cells)
+
+    def test_materials(self):
+        np.testing.assert_array_equal(
+            self.data_mass.materials, np.array([10, 20, 40])
+        )

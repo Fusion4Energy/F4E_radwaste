@@ -1,5 +1,6 @@
 from typing import Optional, List
 
+import numpy as np
 import pandas as pd
 
 from f4e_radwaste.constants import (
@@ -36,6 +37,10 @@ class DataAbsoluteActivity(DataFrameValidator):
         }
 
         return super().get_filtered_dataframe(**filters)
+
+    @property
+    def decay_times(self) -> np.ndarray:
+        return self._dataframe.index.unique(level=KEY_TIME).values
 
 
 # def get_value(self, time, voxel, cell, isotope):
