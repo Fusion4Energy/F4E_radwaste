@@ -10,12 +10,20 @@ KEY_MASS_GRAMS = "Mass [g]"
 
 KEY_HALF_LIFE = "half_life"
 KEY_CSA_DECLARATION = "csa_declaration"
-KEY_LMA = "lma"
+KEY_LMA = "LMA"
 KEY_TFA_CLASS = "tfa_class"
 KEY_TFA_DECLARATION = "tfa_declaration"
 KEY_LDF_DECLARATION = "ldf_declaration"
 
 KEY_SPECIFIC_ACTIVITY = "Activity [Bq/g]"
+
+KEY_TOTAL_SPECIFIC_ACTIVITY = "Total Activity [Bq/g]"
+KEY_RELEVANT_SPECIFIC_ACTIVITY = "Relevant Activity [Bq/g]"
+KEY_IRAS = "IRAS"
+KEY_RADWASTE_CLASS = "Radwaste class"
+TYPE_TFA = 0
+TYPE_A = 1
+TYPE_B = 2
 
 
 class CoordinateType(Enum):

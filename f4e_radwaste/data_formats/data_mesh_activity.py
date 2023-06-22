@@ -16,3 +16,7 @@ class DataMeshActivity(DataFrameValidator):
         filters = {KEY_VOXEL: voxels}
 
         return super().get_filtered_dataframe(**filters)
+
+    def update_dataframe(self, new_dataframe: pd.DataFrame):
+        self._dataframe = new_dataframe
+        self._validate_dataframe_format()
