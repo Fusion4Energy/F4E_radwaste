@@ -77,6 +77,7 @@ class GroupDataByTimeAndMaterialsTests(unittest.TestCase):
         data_mesh_activity = group_data_by_time_and_materials(
             self.data_absolute_activity, self.data_mass, decay_time, materials
         )
+
         pd.testing.assert_frame_equal(
             data_mesh_activity._dataframe, expected_mesh_activity._dataframe
         )
@@ -108,6 +109,27 @@ class GroupDataByTimeAndMaterialsTests(unittest.TestCase):
             self.data_absolute_activity, self.data_mass, 15, [999]
         )
         self.assertIsNone(data_mesh_activity)
+
+    def test_group_data_by_time_and_materials_all_materials(self):
+        # First decay time, all materials
+        data = {
+            KEY_VOXEL: [1, 2],
+            KEY_MASS_GRAMS: [5, 10],
+            "Fe55": [1 / (2 + 3), 0],
+            "H3": [(0.5 + 1.5) / (2 + 3), 2 / 10],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_VOXEL], inplace=True)
+        expected_mesh_activity = DataMeshActivity(df)
+
+        # The argument 'materials' is not filled
+        data_mesh_activity = group_data_by_time_and_materials(
+            self.data_absolute_activity, self.data_mass, 1
+        )
+
+        pd.testing.assert_frame_equal(
+            data_mesh_activity._dataframe, expected_mesh_activity._dataframe
+        )
 
 
 class ClassifyWasteTests(unittest.TestCase):

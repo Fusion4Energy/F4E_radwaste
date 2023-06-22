@@ -15,7 +15,7 @@ from f4e_radwaste.constants import (
     KEY_TFA_DECLARATION,
 )
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
-from f4e_radwaste.readers.isotope_criteria import read_file
+from f4e_radwaste.readers.isotope_criteria_file import read_file
 
 EXAMPLE_ISOTOPE_CRITERIA = """{
   "H3": [
@@ -52,10 +52,10 @@ EXAMPLE_ISOTOPE_CRITERIA = """{
   ],
   "Al26": [
     "2.27E+13",
-    "1",
     "",
-    "1",
-    "0.1",
+    "",
+    "",
+    "",
     ""
   ]
 }
@@ -67,10 +67,10 @@ class IsotopeCriteriaTests(unittest.TestCase):
         data = {
             KEY_ISOTOPE: ["H3", "Be10", "C14", "Na22", "Al26"],
             KEY_HALF_LIFE: [3.89e08, 5.05e13, 1.81e11, 8.21e07, 2.27e13],
-            KEY_CSA_DECLARATION: [10, 0.0001, 10, 1, 1],
+            KEY_CSA_DECLARATION: [10, 0.0001, 10, 1, np.nan],
             KEY_LMA: [2e5, 5.10e03, 9.2e4, 1.3e8, np.nan],
-            KEY_TFA_CLASS: [3, 3, 3, 1, 1],
-            KEY_TFA_DECLARATION: [1, 0.01, 0.1, 0.1, 0.1],
+            KEY_TFA_CLASS: [3, 3, 3, 1, np.nan],
+            KEY_TFA_DECLARATION: [1, 0.01, 0.1, 0.1, np.nan],
             KEY_LDF_DECLARATION: [10, 1, 1, np.nan, np.nan],
         }
         df = pd.DataFrame(data)

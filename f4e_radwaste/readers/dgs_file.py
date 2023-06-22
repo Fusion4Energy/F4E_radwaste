@@ -30,6 +30,7 @@ def read_file(file_path) -> DataAbsoluteActivity:
     # Set the format to that of DataAbsoluteActivity
     index_columns = [KEY_TIME, KEY_VOXEL, KEY_CELL, KEY_ISOTOPE]
     dgs_dataframe.set_index(index_columns, inplace=True)
+    fix_isotope_names(dgs_dataframe)
 
     return DataAbsoluteActivity(dgs_dataframe)
 
@@ -71,3 +72,22 @@ def _read_results(infile, number_decay_times):
                         data[KEY_ABSOLUTE_ACTIVITY].append(activity * volume)
 
     return data
+
+
+def fix_isotope_names(dataframe: pd.DataFrame):
+    """
+    Adapt the name of the isotopes of the DGS file to the formatting of criteria.json
+    """
+    isotope_index = dataframe.index.names.index(KEY_ISOTOPE)
+    current_isotope_names = dataframe.index.levels[isotope_index].values
+
+    corrected_names = []
+    for name in current_isotope_names:
+        name = name.capitalize()
+        if name[-2:] == "m1":
+            name = name[:-1]
+        elif name[-2:] == "m2":
+            name = name[:-2] + "n"
+        corrected_names.append(name)
+
+    dataframe.index = dataframe.index.set_levels(corrected_names, level=KEY_ISOTOPE)

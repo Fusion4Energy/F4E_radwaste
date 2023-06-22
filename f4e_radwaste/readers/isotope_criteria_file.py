@@ -39,9 +39,12 @@ def read_file(path_to_criteria) -> DataIsotopeCriteria:
         criteria_data[KEY_HALF_LIFE].append(parameters[0])
         criteria_data[KEY_CSA_DECLARATION].append(parameters[1])
         criteria_data[KEY_LMA].append(parameters[2])
-        criteria_data[KEY_TFA_CLASS].append(int(parameters[3]))
         criteria_data[KEY_TFA_DECLARATION].append(parameters[4])
         criteria_data[KEY_LDF_DECLARATION].append(parameters[5])
+
+        # TFA class should be an int
+        tfa_class = int(parameters[3]) if parameters[3] is not None else None
+        criteria_data[KEY_TFA_CLASS].append(tfa_class)
 
     criteria_dataframe = pd.DataFrame(data=criteria_data)
     criteria_dataframe.set_index([KEY_ISOTOPE], inplace=True)

@@ -26,7 +26,7 @@ def group_data_by_time_and_materials(
     data_absolute_activity: DataAbsoluteActivity,
     data_mass: DataMass,
     decay_time: float,
-    materials: Optional[List[int]],
+    materials: Optional[List[int]] = None,
 ) -> Optional[DataMeshActivity]:
     # Get the activity only at the cells and decay time of interest
     selected_cells = data_mass.get_cells_from_materials(materials=materials)
