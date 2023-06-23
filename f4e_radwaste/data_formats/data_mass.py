@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -29,10 +29,13 @@ class DataMass(DataFrameValidator):
 
         return super().get_filtered_dataframe(**filters)
 
-    def get_cells_from_materials(self, materials: list) -> List[int]:
+    def get_cells_and_masses_from_materials(
+        self, materials: List
+    ) -> Tuple[List[int], pd.DataFrame]:
         filtered_dataframe = self.get_filtered_dataframe(materials=materials)
         cells = filtered_dataframe.index.unique(level=KEY_CELL).values
-        return list(cells)
+        voxel_masses = filtered_dataframe[KEY_MASS_GRAMS].groupby(KEY_VOXEL).sum()
+        return list(cells), voxel_masses
 
     @property
     def materials(self) -> np.ndarray:

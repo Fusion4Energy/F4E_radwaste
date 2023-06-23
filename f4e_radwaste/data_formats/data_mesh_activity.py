@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import pandas as pd
 
@@ -11,12 +11,21 @@ class DataMeshActivity(DataFrameValidator):
     EXPECTED_COLUMNS = [KEY_MASS_GRAMS]
 
     def get_filtered_dataframe(
-        self, voxels: Optional[List[int]] = None
+        self, voxels: Optional[List[int]] = None, isotopes: Optional[List[str]] = None
     ) -> pd.DataFrame:
         filters = {KEY_VOXEL: voxels}
+        filtered_dataframe = super().get_filtered_dataframe(**filters)
 
-        return super().get_filtered_dataframe(**filters)
+        # Return only the columns with names that match the isotopes provided
+        if isotopes is not None:
+            matching_isotopes = filtered_dataframe.columns.intersection(isotopes)
+            return filtered_dataframe[matching_isotopes]
 
-    def update_dataframe(self, new_dataframe: pd.DataFrame):
-        self._dataframe = new_dataframe
-        self._validate_dataframe_format()
+        return filtered_dataframe
+
+    def add_columns(self, columns: Dict[str, pd.Series]):
+        for column_name, series in columns.items():
+            series.name = column_name
+
+        self._dataframe = pd.concat([*columns.values(), self._dataframe], axis=1)
+        self._dataframe.index.name = KEY_VOXEL

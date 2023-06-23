@@ -28,8 +28,11 @@ def group_data_by_time_and_materials(
     decay_time: float,
     materials: Optional[List[int]] = None,
 ) -> Optional[DataMeshActivity]:
+    selected_cells, voxel_masses = data_mass.get_cells_and_masses_from_materials(
+        materials
+    )
+
     # Get the activity only at the cells and decay time of interest
-    selected_cells = data_mass.get_cells_from_materials(materials=materials)
     filtered_activity = data_absolute_activity.get_filtered_dataframe(
         decay_times=[decay_time],
         cells=selected_cells,
@@ -43,11 +46,6 @@ def group_data_by_time_and_materials(
     combined_activity = filtered_activity.groupby([KEY_VOXEL, KEY_ISOTOPE]).sum()
 
     # Calculate the specific activity in Bq/g
-    voxel_masses = (
-        data_mass.get_filtered_dataframe(materials=materials)[KEY_MASS_GRAMS]
-        .groupby(KEY_VOXEL)
-        .sum()
-    )
     voxel_specific_activity = combined_activity.div(voxel_masses, fill_value=0.0)
 
     # Format the dataframe as DataMeshActivity
@@ -63,25 +61,15 @@ def group_data_by_time_and_materials(
 def classify_waste(
     data_mesh_activity: DataMeshActivity, isotope_criteria: DataIsotopeCriteria
 ):
-    mesh_dataframe = data_mesh_activity.get_filtered_dataframe()
-
     # Get the activity of all isotopes
-    all_isotopes_names = list(
-        set(isotope_criteria.all_isotopes_names) & set(mesh_dataframe.columns)
+    all_isotopes_activity = data_mesh_activity.get_filtered_dataframe(
+        isotopes=isotope_criteria.all_isotopes_names
     )
-    all_isotopes_activity = mesh_dataframe[all_isotopes_names]
-
-    # Get the activity of relevant isotopes (have a TFA class)
-    relevant_isotopes_names = list(
-        set(isotope_criteria.relevant_isotopes_names) & set(mesh_dataframe.columns)
-    )
-    relevant_isotopes_activity = mesh_dataframe[relevant_isotopes_names]
 
     # Calculate radwaste relevant parameters
     iras = (all_isotopes_activity / (10**isotope_criteria.tfa_class)).sum(axis=1)
     lma_exceeded = all_isotopes_activity.ge(isotope_criteria.lma).sum(axis=1)
     total_specific_activity = all_isotopes_activity.sum(axis=1)
-    total_relevant_activity = relevant_isotopes_activity.sum(axis=1)
 
     # Calculate radwaste class
     mask_iras_exceeded = iras >= 1
@@ -90,22 +78,19 @@ def classify_waste(
     radwaste_class[mask_iras_exceeded] = TYPE_A
     radwaste_class[mask_iras_exceeded * mask_lma_exceeded] = TYPE_B
 
-    # Assign names to the new series and merge them into a new dataframe
-    radwaste_class.name = KEY_RADWASTE_CLASS
-    iras.name = KEY_IRAS
-    lma_exceeded.name = KEY_LMA
-    total_specific_activity.name = KEY_TOTAL_SPECIFIC_ACTIVITY
-    total_relevant_activity.name = KEY_RELEVANT_SPECIFIC_ACTIVITY
-    new_mesh_dataframe = pd.concat(
-        [
-            radwaste_class,
-            iras,
-            lma_exceeded,
-            total_specific_activity,
-            total_relevant_activity,
-            mesh_dataframe,
-        ],
-        axis=1,
+    # Get the activity of relevant isotopes (have a TFA class)
+    relevant_isotopes_activity = data_mesh_activity.get_filtered_dataframe(
+        isotopes=isotope_criteria.relevant_isotopes_names
     )
+    total_relevant_activity = relevant_isotopes_activity.sum(axis=1)
 
-    data_mesh_activity.update_dataframe(new_mesh_dataframe)
+    # Assign names to the new series and merge them into a new dataframe
+    data_mesh_activity.add_columns(
+        {
+            KEY_RADWASTE_CLASS: radwaste_class,
+            KEY_IRAS: iras,
+            KEY_LMA: lma_exceeded,
+            KEY_TOTAL_SPECIFIC_ACTIVITY: total_specific_activity,
+            KEY_RELEVANT_SPECIFIC_ACTIVITY: total_relevant_activity,
+        }
+    )

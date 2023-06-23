@@ -56,11 +56,19 @@ class DataMassTests(unittest.TestCase):
         )
         self.assertTrue(filtered_df.equals(expected_df))
 
-    def test_get_cells_from_materials(self):
-        cells = self.data_mass.get_cells_from_materials(materials=[10, 20])
+    def test_get_cells_and_masses_from_materials(self):
+        data = {
+            KEY_VOXEL: [1, 2],
+            KEY_MASS_GRAMS: [2.34 + 3.13, 1.09],
+        }
+        expected_masses = pd.DataFrame(data)
+        expected_masses.set_index([KEY_VOXEL], inplace=True)
+        expected_masses.columns.name = None
+
+        cells, masses = self.data_mass.get_cells_and_masses_from_materials(
+            materials=[10, 20]
+        )
         self.assertListEqual([11, 12], cells)
 
     def test_materials(self):
-        np.testing.assert_array_equal(
-            self.data_mass.materials, np.array([10, 20, 40])
-        )
+        np.testing.assert_array_equal(self.data_mass.materials, np.array([10, 20, 40]))
