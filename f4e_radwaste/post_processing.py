@@ -42,7 +42,7 @@ def group_data_by_time_and_materials(
         return None
 
     # Multiple cells with the same combination of voxel and isotope may exist,
-    # sum the absolute activity of those
+    #  sum the absolute activity of those
     combined_activity = filtered_activity.groupby([KEY_VOXEL, KEY_ISOTOPE]).sum()
 
     # Calculate the specific activity in Bq/g

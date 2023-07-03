@@ -12,13 +12,13 @@ from f4e_radwaste.data_formats.data_mass import DataMass
 @dataclass
 class DataMeshInfo:
     coordinates: CoordinateType
-    vector_i: np.array
-    vector_j: np.array
-    vector_k: np.array
+    vector_i: np.ndarray
+    vector_j: np.ndarray
+    vector_k: np.ndarray
     data_mass: Optional[DataMass] = None
-    origin: Optional[np.array] = None
-    axis: Optional[np.array] = None
-    vec: Optional[np.array] = None
+    origin: Optional[np.ndarray] = None
+    axis: Optional[np.ndarray] = None
+    vec: Optional[np.ndarray] = None
 
     def __post_init__(self):
         # Validate the type of coordinates
