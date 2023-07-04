@@ -9,10 +9,10 @@ from f4e_radwaste.readers import isotope_criteria_file
 
 def main():
     data_absolute_activity = dgs_file.read_file(
-        r"D:\WORK\tryingSimple\tests\data\DGSdata_example_ivvs.dat"
+        r"D:\WORK\tryingSimple\tests\old_data\DGSdata_example_ivvs.dat"
     )
     data_mesh_info = mesh_info_file.read_file(
-        r"D:\WORK\tryingSimple\tests\data\meshinfo_cart"
+        r"D:\WORK\tryingSimple\tests\old_data\meshinfo_cart"
     )
     isotope_criteria = isotope_criteria_file.read_file(
         r"D:\WORK\tryingSimple\f4e_radwaste\resources\criteria.json"

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional, List, Dict
 
 import pandas as pd
@@ -29,3 +30,6 @@ class DataMeshActivity(DataFrameValidator):
 
         self._dataframe = pd.concat([*columns.values(), self._dataframe], axis=1)
         self._dataframe.index.name = KEY_VOXEL
+
+    def to_csv(self, folder_path: Path, file_name: str):
+        self._dataframe.to_csv(folder_path / f"{file_name}.csv")

@@ -8,7 +8,7 @@ from f4e_radwaste.readers.mesh_info_file import read_file
 
 class MeshInfoFilePerformanceTests(unittest.TestCase):
     def test_read_file_cart(self):
-        path_to_meshinfo_file = "data/meshinfo_cart"
+        path_to_meshinfo_file = "old_data/meshinfo_cart"
         meshinfo = read_file(path_to_meshinfo_file)
         self.assertEqual(CoordinateType.CARTESIAN, meshinfo.coordinates)
         self.assertAlmostEqual(734.00, meshinfo.vector_j[0])
@@ -27,7 +27,7 @@ class MeshInfoFilePerformanceTests(unittest.TestCase):
         self.assertTrue(940030 in cells.reset_index()["Cell"].values)
 
     def test_read_file_cyl(self):
-        path_to_meshinfo_file = "data/meshinfo_cyl"
+        path_to_meshinfo_file = "old_data/meshinfo_cyl"
         meshinfo = read_file(path_to_meshinfo_file)
         self.assertEqual(CoordinateType.CYLINDRICAL, meshinfo.coordinates)
         self.assertAlmostEqual(0.0, meshinfo.origin.sum())

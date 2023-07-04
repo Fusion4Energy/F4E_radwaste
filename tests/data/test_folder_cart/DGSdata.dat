@@ -1,0 +1,21 @@
+ Photon Isotope
+Number of decay times:         2
+ Case:         5808  Nmat:            2
+ Cells:
+ 1 2
+ Volumes:
+ 0.1 0.2
+Time  1.000E+05 S
+Number of materials:         3
+Nb91M1     Hf178M2     Co60
+2.2648085E+07 7.2338034E+06 6.8497718E+06
+Number of materials:         3
+Nb91M1     Hf178M2     Co60
+2.2648085E+02 7.2338034E+02 6.8497718E+02
+Time  2.300E+05 S
+Number of materials:         3
+Nb91M1     Hf178M2     Co60
+2.2648085E+07 7.2338034E+06 6.8497718E+06
+Number of materials:         3
+Nb91M1     Hf178M2     Co60
+2.2648085E+02 7.2338034E+02 6.8497718E+02

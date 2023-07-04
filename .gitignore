@@ -1,6 +1,6 @@
 .coverage
 .idea
 htmlcov
-data
+old_data
 *.prof
 delete.py

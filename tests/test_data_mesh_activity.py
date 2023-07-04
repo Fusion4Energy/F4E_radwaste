@@ -1,5 +1,7 @@
+import os
 import unittest
 from copy import deepcopy
+from pathlib import Path
 
 import pandas as pd
 
@@ -85,3 +87,7 @@ class DataMeshActivityTests(unittest.TestCase):
         )
 
         pd.testing.assert_frame_equal(data_mesh_activity._dataframe, expected_df)
+
+    def test_to_csv(self):
+        self.data_mesh_activity.to_csv(Path(""), "test")
+        os.remove("test.csv")
