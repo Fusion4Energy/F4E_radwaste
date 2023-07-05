@@ -41,7 +41,3 @@ class DataAbsoluteActivity(DataFrameValidator):
     @property
     def decay_times(self) -> np.ndarray:
         return self._dataframe.index.unique(level=KEY_TIME).values
-
-
-# def get_value(self, time, voxel, cell, isotope):
-#     return self._dataframe.loc[(time, voxel, cell, isotope)][KEY_ABSOLUTE_ACTIVITY]

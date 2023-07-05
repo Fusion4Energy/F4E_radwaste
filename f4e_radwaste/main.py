@@ -5,6 +5,7 @@ from pathlib import Path
 
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
+from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.helpers import format_time_seconds_to_str
 from f4e_radwaste.meshgrids import create_grid
@@ -12,7 +13,12 @@ from f4e_radwaste.post_processing import (
     group_data_by_time_and_materials,
     classify_waste,
 )
-from f4e_radwaste.readers import dgs_file, mesh_info_file, isotope_criteria_file
+from f4e_radwaste.readers import (
+    dgs_file,
+    mesh_info_file,
+    isotope_criteria_file,
+    filter_cells_file,
+)
 
 
 @dataclass
@@ -44,6 +50,23 @@ def standard_process(input_folder_path: Path):
 
     # Process and save the data grouped by material in VTK and CSV
     process_data_by_material(input_data, folder_paths)
+
+
+def filtered_process(input_folder_path: Path):
+    # Get the data
+    folder_paths = get_folder_paths(input_folder_path)
+    input_data = load_and_filter_input_data_from_folder(folder_paths.input_files)
+
+    # Save the data tables before formatting
+    input_data.save_data_tables(folder_paths)
+
+    # Process and save the data grouped by material in VTK and CSV
+    process_data_by_material(input_data, folder_paths)
+
+
+def by_component_process(input_folder_path: Path):
+    # TODO
+    pass
 
 
 def process_data_by_material(input_data: InputData, folder_paths: FolderPaths):
@@ -105,6 +128,32 @@ def load_input_data_from_folder(folder_path: Path) -> InputData:
     return InputData(data_absolute_activity, data_mesh_info, isotope_criteria)
 
 
+def load_and_filter_input_data_from_folder(folder_path: Path) -> InputData:
+    input_data = load_input_data_from_folder(folder_path)
+
+    cells_to_include = filter_cells_file.read_file(
+        folder_path / "filter_include_cells.json"
+    )
+
+    # Filter DataAbsoluteActivity
+    filtered_absolute_activity_df = (
+        input_data.data_absolute_activity.get_filtered_dataframe(
+            cells=cells_to_include,
+        )
+    )
+    input_data.data_absolute_activity = DataAbsoluteActivity(
+        filtered_absolute_activity_df
+    )
+
+    # Filter DataMeshInfo
+    filtered_data_mass_df = input_data.data_mesh_info.data_mass.get_filtered_dataframe(
+        cells=cells_to_include
+    )
+    input_data.data_mesh_info.data_mass = DataMass(filtered_data_mass_df)
+
+    return input_data
+
+
 def get_folder_paths(input_folder_path: Path) -> FolderPaths:
     data_tables_path = input_folder_path / "data_tables"
     csv_results_path = input_folder_path / "csv_files"
@@ -126,4 +175,4 @@ def get_folder_paths(input_folder_path: Path) -> FolderPaths:
 
 
 if __name__ == "__main__":
-    standard_process(Path(r"D:\WORK\tryingSimple\tests\old_data\ivvs_cart"))
+    filtered_process(Path(r"D:\WORK\tryingSimple\tests\old_data\ivvs_cart"))

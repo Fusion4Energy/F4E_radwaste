@@ -7,7 +7,11 @@ from pathlib import Path
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
-from f4e_radwaste.main import get_folder_paths, load_input_data_from_folder
+from f4e_radwaste.main import (
+    get_folder_paths,
+    load_input_data_from_folder,
+    load_and_filter_input_data_from_folder,
+)
 
 
 class MainTests(unittest.TestCase):
@@ -55,3 +59,25 @@ class MainTestsFolders(unittest.TestCase):
         self.assertIsInstance(input_data.data_absolute_activity, DataAbsoluteActivity)
         self.assertIsInstance(input_data.data_mesh_info, DataMeshInfo)
         self.assertIsInstance(input_data.isotope_criteria, DataIsotopeCriteria)
+
+    def test_load_and_filter_input_data_from_folder(self):
+        folder_path = Path(__file__).parent / "data/test_folder_cart"
+        input_data = load_and_filter_input_data_from_folder(folder_path)
+
+        self.assertIsInstance(input_data.data_absolute_activity, DataAbsoluteActivity)
+        self.assertIsInstance(input_data.data_mesh_info, DataMeshInfo)
+        self.assertIsInstance(input_data.isotope_criteria, DataIsotopeCriteria)
+
+        cells_in_activity = (
+            input_data.data_absolute_activity._dataframe.index.get_level_values(2)
+            .unique()
+            .tolist()
+        )
+        self.assertListEqual([1], cells_in_activity)
+
+        cells_in_data_mass = (
+            input_data.data_mesh_info.data_mass._dataframe.index.get_level_values(2)
+            .unique()
+            .tolist()
+        )
+        self.assertListEqual([309485], cells_in_data_mass)
