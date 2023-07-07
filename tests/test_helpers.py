@@ -17,6 +17,7 @@ class HelpersTests(unittest.TestCase):
             (5184000, "60.00d"),
             (31536000, "1.00y"),
             (63072000, "2.00y"),
+            (6307200000, "200.00y"),
         ]
 
         # Run tests

@@ -1,4 +1,6 @@
-from typing import List, Optional
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
@@ -20,6 +22,84 @@ from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivit
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
+from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
+from f4e_radwaste.helpers import format_time_seconds_to_str
+from f4e_radwaste.meshgrids import create_grid
+
+
+@dataclass
+class FolderPaths:
+    input_files: Path
+    data_tables: Path
+    csv_results: Path
+    vtk_results: Path
+
+
+@dataclass
+class InputData:
+    data_absolute_activity: DataAbsoluteActivity
+    data_mesh_info: DataMeshInfo
+    isotope_criteria: DataIsotopeCriteria
+
+    def save_data_tables(self, folder_paths: FolderPaths):
+        self.data_absolute_activity.save_dataframe_to_hdf5(folder_paths.data_tables)
+        self.data_mesh_info.save(folder_paths.data_tables)
+
+
+def process_input_data_by_material(input_data: InputData, folder_paths: FolderPaths):
+    decay_times = input_data.data_absolute_activity.decay_times
+    materials = input_data.data_mesh_info.data_mass.materials
+
+    for decay_time in decay_times:
+        for material in materials:
+            data_mesh_activity = group_data_by_time_and_materials(
+                data_absolute_activity=input_data.data_absolute_activity,
+                data_mass=input_data.data_mesh_info.data_mass,
+                decay_time=decay_time,
+                materials=[material],
+            )
+            if data_mesh_activity is None:
+                continue
+
+            classify_waste(data_mesh_activity, input_data.isotope_criteria)
+            grid = create_grid(input_data.data_mesh_info, data_mesh_activity)
+
+            save_mesh_as_csv_and_vtk(
+                data_mesh_activity, grid, folder_paths, decay_time, material
+            )
+
+        # All materials combination
+        data_mesh_activity = group_data_by_time_and_materials(
+            data_absolute_activity=input_data.data_absolute_activity,
+            data_mass=input_data.data_mesh_info.data_mass,
+            decay_time=decay_time,
+            materials=None,
+        )
+
+        classify_waste(data_mesh_activity, input_data.isotope_criteria)
+        grid = create_grid(input_data.data_mesh_info, data_mesh_activity)
+
+        save_mesh_as_csv_and_vtk(
+            data_mesh_activity, grid, folder_paths, decay_time, "all_materials"
+        )
+
+
+def apply_filter_include_cells(input_data: InputData, cells_to_include: List[int]):
+    # Filter DataAbsoluteActivity
+    filtered_absolute_activity_df = (
+        input_data.data_absolute_activity.get_filtered_dataframe(
+            cells=cells_to_include,
+        )
+    )
+    input_data.data_absolute_activity = DataAbsoluteActivity(
+        filtered_absolute_activity_df
+    )
+
+    # Filter DataMeshInfo
+    filtered_data_mass_df = input_data.data_mesh_info.data_mass.get_filtered_dataframe(
+        cells=cells_to_include
+    )
+    input_data.data_mesh_info.data_mass = DataMass(filtered_data_mass_df)
 
 
 def group_data_by_time_and_materials(
@@ -56,6 +136,18 @@ def group_data_by_time_and_materials(
     voxel_activity_dataframe.insert(0, KEY_MASS_GRAMS, voxel_masses)
 
     return DataMeshActivity(voxel_activity_dataframe)
+
+
+def save_mesh_as_csv_and_vtk(
+    data_mesh_activity, grid, folder_paths, decay_time, material
+):
+    decay_time_str = format_time_seconds_to_str(decay_time)
+    dataset_name = f"{decay_time_str}_{material}"
+
+    data_mesh_activity.to_csv(folder_paths.csv_results, dataset_name)
+    grid.save(f"{folder_paths.vtk_results}/{dataset_name}.vts")
+
+    print(f"{material} for time {decay_time_str}")
 
 
 def classify_waste(

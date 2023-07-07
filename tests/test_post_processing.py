@@ -25,14 +25,18 @@ from f4e_radwaste.constants import (
     TYPE_TFA,
     TYPE_A,
     TYPE_B,
+    CoordinateType,
 )
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
+from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.post_processing import (
     group_data_by_time_and_materials,
     classify_waste,
+    InputData,
+    apply_filter_include_cells,
 )
 
 
@@ -132,6 +136,14 @@ class GroupDataByTimeAndMaterialsTests(unittest.TestCase):
         )
 
 
+class GroupDataByTimeAndComponentsTests(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_something(self):
+        self.assertTrue(False)
+
+
 class ClassifyWasteTests(unittest.TestCase):
     def setUp(self) -> None:
         # DataIsotopeCriteria
@@ -187,3 +199,78 @@ class ClassifyWasteTests(unittest.TestCase):
         voxel_4_data = data_mesh_activity.get_filtered_dataframe(voxels=[4])
         radwaste_class_voxel_4 = voxel_4_data[KEY_RADWASTE_CLASS].values[0]
         self.assertEqual(radwaste_class_voxel_4, TYPE_B)
+
+
+class ProcessingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # DataAbsoluteActivity
+        data = {
+            KEY_TIME: [1, 1, 1, 1, 2, 2],
+            KEY_VOXEL: [1, 1, 1, 2, 1, 1],
+            KEY_CELL: [1, 1, 2, 3, 1, 2],
+            KEY_ISOTOPE: ["H3", "Fe55", "H3", "H3", "H3", "Fe55"],
+            KEY_ABSOLUTE_ACTIVITY: [0.5, 1.0, 1.5, 2.0, 0.1, 0.2],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_TIME, KEY_VOXEL, KEY_CELL, KEY_ISOTOPE], inplace=True)
+        self.data_absolute_activity = DataAbsoluteActivity(df)
+
+        # DataMass
+        data = {
+            KEY_VOXEL: [1, 1, 2],
+            KEY_MATERIAL: [10, 20, 30],
+            KEY_CELL: [1, 2, 3],
+            KEY_MASS_GRAMS: [2, 3, 10],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_VOXEL, KEY_MATERIAL, KEY_CELL], inplace=True)
+        self.data_mass = DataMass(df)
+
+        # DataMeshInfo
+        self.data_mesh_info = DataMeshInfo(
+            coordinates=CoordinateType.CARTESIAN,
+            data_mass=self.data_mass,
+            vector_i=np.array([0, 10, 20]),
+            vector_j=np.array([0, 15]),
+            vector_k=np.array([1, 2]),
+        )
+
+        # DataIsotopeCriteria
+        data = {
+            KEY_ISOTOPE: ["H3", "Be10", "C14", "Na22", "K42"],
+            KEY_HALF_LIFE: [3.89e08, 5.05e13, 1.81e11, 8.21e07, 2.27e13],
+            KEY_CSA_DECLARATION: [10, 0.0001, 10, 1, 1],
+            KEY_LMA: [2e5, 5.10e99, 9.2e4, 1.3e8, 4],
+            KEY_TFA_CLASS: [3, 2, 3, 1, np.nan],
+            KEY_TFA_DECLARATION: [1, 0.01, 0.1, 0.1, 0.1],
+            KEY_LDF_DECLARATION: [10, 1, 1, np.nan, np.nan],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_ISOTOPE], inplace=True)
+        self.data_isotope_criteria = DataIsotopeCriteria(df)
+
+    def test_apply_filter_include_cells(self):
+        input_data = InputData(
+            self.data_absolute_activity, self.data_mesh_info, self.data_isotope_criteria
+        )
+        cells_to_include = [1]
+
+        apply_filter_include_cells(input_data, cells_to_include)
+
+        self.assertIsInstance(input_data.data_absolute_activity, DataAbsoluteActivity)
+        self.assertIsInstance(input_data.data_mesh_info, DataMeshInfo)
+        self.assertIsInstance(input_data.isotope_criteria, DataIsotopeCriteria)
+
+        cells_in_activity = (
+            input_data.data_absolute_activity._dataframe.index.get_level_values(2)
+            .unique()
+            .tolist()
+        )
+        self.assertListEqual([1], cells_in_activity)
+
+        cells_in_data_mass = (
+            input_data.data_mesh_info.data_mass._dataframe.index.get_level_values(2)
+            .unique()
+            .tolist()
+        )
+        self.assertListEqual([1], cells_in_data_mass)
