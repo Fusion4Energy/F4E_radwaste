@@ -1,5 +1,8 @@
+import shutil
+import tempfile
 import unittest
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -25,7 +28,12 @@ from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
-from f4e_radwaste.post_processing.input_data import InputData
+from f4e_radwaste.post_processing.folder_paths import FolderPaths
+from f4e_radwaste.post_processing.input_data import (
+    InputData,
+    create_name_by_time_and_materials,
+)
+from f4e_radwaste.post_processing.mesh_ouput import MeshOutput
 
 
 class InputDataTests(unittest.TestCase):
@@ -42,7 +50,7 @@ class InputDataTests(unittest.TestCase):
         df.set_index([KEY_TIME, KEY_VOXEL, KEY_CELL, KEY_ISOTOPE], inplace=True)
         data_absolute_activity = DataAbsoluteActivity(df)
 
-        # DataMass
+        # DataMeshInfo
         data = {
             KEY_VOXEL: [1, 1, 2],
             KEY_MATERIAL: [10, 20, 30],
@@ -79,6 +87,18 @@ class InputDataTests(unittest.TestCase):
             data_mesh_info=data_mesh_info,
             isotope_criteria=data_isotope_criteria,
         )
+
+        # Temporary folder
+        self.test_dir = tempfile.mkdtemp()
+        self.folder_paths = FolderPaths(
+            input_files=Path(""),
+            data_tables=Path(self.test_dir),
+            csv_results=Path(""),
+            vtk_results=Path(""),
+        )
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
 
     def test_get_mesh_activity_by_time_and_materials_simple(self):
         # Second decay time, material 10 only
@@ -125,10 +145,8 @@ class InputDataTests(unittest.TestCase):
         )
 
     def test_get_mesh_activity_by_time_and_materials_empty(self):
-        data_mesh_activity = self.input_data.get_mesh_activity_by_time_and_materials(
-            15, [999]
-        )
-        self.assertIsNone(data_mesh_activity)
+        with self.assertRaises(ValueError):
+            self.input_data.get_mesh_activity_by_time_and_materials(15, [999])
 
     def test_get_mesh_activity_by_time_and_materials_all_materials(self):
         # First decay time, all materials
@@ -171,10 +189,45 @@ class InputDataTests(unittest.TestCase):
         self.assertListEqual([1], cells_in_activity)
 
         cells_in_data_mass = (
-            input_data.data_mesh_info.data_mass._dataframe.index.get_level_values(
-                2
-            )
+            input_data.data_mesh_info.data_mass._dataframe.index.get_level_values(2)
             .unique()
             .tolist()
         )
         self.assertListEqual([1], cells_in_data_mass)
+
+    def test_get_mesh_output_by_time_and_materials(self):
+        result = self.input_data.get_mesh_output_by_time_and_materials(1, [10])
+
+        self.assertIsInstance(result, MeshOutput)
+
+    def test_try_get_mesh_output_by_time_and_materials_no_exception(self):
+        result_try = self.input_data.try_get_mesh_output_by_time_and_materials(1, [10])
+        direct_result = self.input_data.get_mesh_output_by_time_and_materials(1, [10])
+
+        pd.testing.assert_frame_equal(
+            result_try.data_mesh_activity._dataframe,
+            direct_result.data_mesh_activity._dataframe,
+        )
+
+    def test_try_get_mesh_output_by_time_and_materials_with_exception(self):
+        result = self.input_data.try_get_mesh_output_by_time_and_materials(1, [99999])
+
+        self.assertIsNone(result)
+
+    def test_save_data_tables(self):
+        self.input_data.save_data_tables(self.folder_paths)
+
+        absolute_activity_file = (
+            f"{self.input_data.data_absolute_activity.__class__.__name__}.hdf5"
+        )
+        self.assertTrue(self.folder_paths.data_tables / absolute_activity_file)
+
+        mesh_info_file = f"{self.input_data.data_mesh_info.__class__.__name__}.hdf5"
+        self.assertTrue(self.folder_paths.data_tables / mesh_info_file)
+
+    def test_create_name_by_time_and_materials(self):
+        result = create_name_by_time_and_materials(5, [123])
+        self.assertEqual(result, "Time 5.00s with materials [123]")
+
+        result = create_name_by_time_and_materials(5)
+        self.assertEqual(result, "Time 5.00s with materials all_materials")

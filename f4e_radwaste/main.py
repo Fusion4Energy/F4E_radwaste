@@ -14,8 +14,6 @@ from f4e_radwaste.readers import (
 
 FILENAME_MESHINFO = "meshinfo"
 FILENAME_DGS_DATA = "DGSdata.dat"
-FILENAME_FILTER_INCLUDE_CELLS = "filter_include_cells.json"
-FILENAME_COMPONENT_IDS = "components.json"
 PATH_TO_CRITERIA_FILE = Path(__file__).parent / "resources/criteria.json"
 FOLDER_NAME_DATA_TABLES = "data_tables"
 FOLDER_NAME_CSV = "csv_files"
@@ -40,9 +38,7 @@ def filtered_process(input_folder_path: Path):
     input_data = load_input_data_from_folder(folder_paths.input_files)
 
     # Apply the filter
-    cells_to_include = filter_cells_file.read_file(
-        folder_paths.input_files / FILENAME_FILTER_INCLUDE_CELLS
-    )
+    cells_to_include = filter_cells_file.read_file(folder_paths.input_files)
     input_data.apply_filter_include_cells(cells_to_include)
 
     # Save the data tables before formatting

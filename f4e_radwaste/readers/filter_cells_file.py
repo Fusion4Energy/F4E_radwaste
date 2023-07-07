@@ -11,14 +11,15 @@ in a filtered post-process. The file should have the following format:
 import json
 from pathlib import Path
 
+FILENAME = "filter_include_cells.json"
 KEY_CELLS_TO_INCLUDE = "cells_to_include"
 
 
-def read_file(path: Path) -> list[int]:
+def read_file(path_to_input_folder: Path) -> list[int]:
     """
     Returns the list of cells that should be included in the analysis.
     """
-    with open(path, "r") as infile:
+    with open(path_to_input_folder / FILENAME, "r") as infile:
         data = json.load(infile)
 
     cells_to_include = data[KEY_CELLS_TO_INCLUDE]

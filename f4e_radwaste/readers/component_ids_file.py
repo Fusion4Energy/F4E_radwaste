@@ -10,13 +10,15 @@ of the JSON is as follows:
 import json
 from typing import List, Tuple
 
+FILENAME = "components.json"
 
-def get_component_ids_from_file(file_path) -> List[Tuple[str, List[int]]]:
+
+def get_component_ids_from_file(path_to_folder) -> List[Tuple[str, List[int]]]:
     """
     Returns a list, every item represents a component as a tuple.
     Every tuple contains as first item the component name and as second item a list of
     the cell ids that form that component.
     """
-    with open(file_path, "r") as infile:
+    with open(path_to_folder / FILENAME, "r") as infile:
         component_ids = json.load(infile)
     return component_ids

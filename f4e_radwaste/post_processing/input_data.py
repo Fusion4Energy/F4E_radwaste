@@ -28,28 +28,33 @@ class InputData:
         self.data_absolute_activity.save_dataframe_to_hdf5(folder_paths.data_tables)
         self.data_mesh_info.save(folder_paths.data_tables)
 
-    def get_mesh_output_by_time_and_materials(
-            self, decay_time: float, materials: Optional[List[int]] = None
+    def try_get_mesh_output_by_time_and_materials(
+        self, decay_time: float, materials: Optional[List[int]] = None
     ) -> Optional[MeshOutput]:
+        try:
+            return self.get_mesh_output_by_time_and_materials(decay_time, materials)
+        except ValueError:
+            return None
+
+    def get_mesh_output_by_time_and_materials(
+        self, decay_time, materials
+    ) -> MeshOutput:
         data_mesh_activity = self.get_mesh_activity_by_time_and_materials(
             decay_time=decay_time,
             materials=materials,
         )
 
-        if data_mesh_activity is None:
-            return None
-
         data_mesh_activity = classify_waste(data_mesh_activity, self.isotope_criteria)
 
         return MeshOutput(
-            name=create_name_by_time_and_material(decay_time, materials),
+            name=create_name_by_time_and_materials(decay_time, materials),
             data_mesh_info=self.data_mesh_info,
             data_mesh_activity=data_mesh_activity,
         )
 
     def get_mesh_activity_by_time_and_materials(
-            self, decay_time: float, materials: Optional[List[int]] = None
-    ) -> Optional[DataMeshActivity]:
+        self, decay_time: float, materials: Optional[List[int]] = None
+    ) -> DataMeshActivity:
         data_mass = self.data_mesh_info.data_mass
         selected_cells, voxel_masses = data_mass.get_cells_and_masses_from_materials(
             materials
@@ -62,7 +67,7 @@ class InputData:
         )[KEY_ABSOLUTE_ACTIVITY]
 
         if filtered_activity.empty:
-            return None
+            raise ValueError
 
         # Multiple cells with the same combination of voxel and isotope may exist,
         #  sum the absolute activity of those
@@ -98,8 +103,8 @@ class InputData:
         self.data_mesh_info.data_mass = DataMass(filtered_data_mass_df)
 
 
-def create_name_by_time_and_material(
-        decay_time: float, materials: Optional[List[int]]
+def create_name_by_time_and_materials(
+    decay_time: float, materials: Optional[List[int]] = None
 ) -> str:
     time_str = format_time_seconds_to_str(decay_time)
     if materials is None:
