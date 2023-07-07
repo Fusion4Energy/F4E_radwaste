@@ -1,4 +1,4 @@
-def format_time_seconds_to_str(time_seconds: int) -> str:
+def format_time_seconds_to_str(time_seconds: int | float) -> str:
     """
     Returns a human-readable string representation of time in the appropriate unit.
     """

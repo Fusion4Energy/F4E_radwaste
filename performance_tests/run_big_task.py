@@ -1,7 +1,7 @@
 from f4e_radwaste.post_processing import (
     group_data_by_time_and_materials,
-    classify_waste,
 )
+from f4e_radwaste.post_processing.classify_waste import classify_waste
 from f4e_radwaste.readers import dgs_file
 from f4e_radwaste.readers import mesh_info_file
 from f4e_radwaste.readers import isotope_criteria_file

@@ -8,20 +8,12 @@ from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivit
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.main import (
-    get_folder_paths,
     load_input_data_from_folder,
+    get_folder_paths,
 )
 
 
 class MainTests(unittest.TestCase):
-    def setUp(self):
-        self.test_dir = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.test_dir)
-
-
-class MainTestsFolders(unittest.TestCase):
     def setUp(self):
         self.test_dir_empty = tempfile.mkdtemp()
         self.test_dir_filled = tempfile.mkdtemp()

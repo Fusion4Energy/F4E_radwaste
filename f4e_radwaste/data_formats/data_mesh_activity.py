@@ -24,12 +24,14 @@ class DataMeshActivity(DataFrameValidator):
 
         return filtered_dataframe
 
-    def add_columns(self, columns: Dict[str, pd.Series]):
+    def get_dataframe_with_added_columns(self, columns: Dict[str, pd.Series]):
         for column_name, series in columns.items():
             series.name = column_name
 
-        self._dataframe = pd.concat([*columns.values(), self._dataframe], axis=1)
-        self._dataframe.index.name = KEY_VOXEL
+        dataframe = pd.concat([*columns.values(), self._dataframe], axis=1)
+        dataframe.index.name = KEY_VOXEL
+
+        return dataframe
 
     def to_csv(self, folder_path: Path, file_name: str):
         self._dataframe.to_csv(folder_path / f"{file_name}.csv")

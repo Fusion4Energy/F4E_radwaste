@@ -2,12 +2,9 @@ import os
 import shutil
 from pathlib import Path
 
-from f4e_radwaste.post_processing import (
-    process_input_data_by_material,
-    FolderPaths,
-    InputData,
-    apply_filter_include_cells,
-)
+from f4e_radwaste.post_processing.folder_paths import FolderPaths
+from f4e_radwaste.post_processing.input_data import InputData
+from f4e_radwaste.post_processing.post_processing import process_input_data_by_material
 from f4e_radwaste.readers import (
     dgs_file,
     mesh_info_file,
@@ -46,7 +43,7 @@ def filtered_process(input_folder_path: Path):
     cells_to_include = filter_cells_file.read_file(
         folder_paths.input_files / FILENAME_FILTER_INCLUDE_CELLS
     )
-    apply_filter_include_cells(input_data, cells_to_include)
+    input_data.apply_filter_include_cells(cells_to_include)
 
     # Save the data tables before formatting
     input_data.save_data_tables(folder_paths)

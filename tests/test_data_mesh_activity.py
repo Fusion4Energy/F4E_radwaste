@@ -74,19 +74,18 @@ class DataMeshActivityTests(unittest.TestCase):
         expected_df = pd.DataFrame(data)
         expected_df.set_index([KEY_VOXEL], inplace=True)
 
-        data_mesh_activity = deepcopy(self.data_mesh_activity)
         column_1 = pd.Series([0.3, 0.5, 5.32e3, 0.4])
         column_2 = pd.Series(["str", "str", "str", "str"])
         column_1.index = [1, 2, 3, 4]
         column_2.index = [1, 2, 3, 4]
-        data_mesh_activity.add_columns(
+        result_dataframe = self.data_mesh_activity.get_dataframe_with_added_columns(
             {
                 "Nb94": column_1,
                 "Other name": column_2,
             }
         )
 
-        pd.testing.assert_frame_equal(data_mesh_activity._dataframe, expected_df)
+        pd.testing.assert_frame_equal(result_dataframe, expected_df)
 
     def test_to_csv(self):
         self.data_mesh_activity.to_csv(Path(""), "test")
