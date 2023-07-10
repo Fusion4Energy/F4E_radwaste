@@ -4,12 +4,19 @@ from pathlib import Path
 
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import InputData
-from f4e_radwaste.post_processing.post_processing import process_input_data_by_material
+from f4e_radwaste.post_processing.post_processing import (
+    process_input_data_by_material,
+    process_input_data_by_components,
+)
 from f4e_radwaste.readers import (
     dgs_file,
     mesh_info_file,
     isotope_criteria_file,
     filter_cells_file,
+)
+from f4e_radwaste.readers.component_ids_file import (
+    get_component_ids_from_folder,
+    get_relevant_cells_from_components,
 )
 
 FILENAME_MESHINFO = "meshinfo"
@@ -36,9 +43,9 @@ def filtered_process(input_folder_path: Path):
     # Get the data
     folder_paths = get_folder_paths(input_folder_path)
     input_data = load_input_data_from_folder(folder_paths.input_files)
+    cells_to_include = filter_cells_file.read_file(folder_paths.input_files)
 
     # Apply the filter
-    cells_to_include = filter_cells_file.read_file(folder_paths.input_files)
     input_data.apply_filter_include_cells(cells_to_include)
 
     # Save the data tables before formatting
@@ -46,6 +53,20 @@ def filtered_process(input_folder_path: Path):
 
     # Process and save the data grouped by material in VTK and CSV
     process_input_data_by_material(input_data, folder_paths)
+
+
+def by_component_process(input_folder_path: Path):
+    # Get the data
+    folder_paths = get_folder_paths(input_folder_path)
+    input_data = load_input_data_from_folder(folder_paths.input_files)
+    component_ids = get_component_ids_from_folder(folder_paths.input_files)
+
+    # Filter in only the cells that appear in the components for performance reasons
+    cells_to_include = get_relevant_cells_from_components(component_ids)
+    input_data.apply_filter_include_cells(cells_to_include)
+
+    # Process and save the data grouped by component in CSV
+    process_input_data_by_components(input_data, folder_paths, component_ids)
 
 
 def get_folder_paths(input_folder_path: Path) -> FolderPaths:

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
+import pandas as pd
+
 from f4e_radwaste.constants import (
     KEY_ABSOLUTE_ACTIVITY,
     KEY_VOXEL,
@@ -14,6 +16,7 @@ from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.helpers import format_time_seconds_to_str
 from f4e_radwaste.post_processing.classify_waste import classify_waste
+from f4e_radwaste.post_processing.component_output import ComponentOutput
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.mesh_ouput import MeshOutput
 
@@ -84,6 +87,55 @@ class InputData:
         voxel_activity_dataframe.insert(0, KEY_MASS_GRAMS, voxel_masses)
 
         return DataMeshActivity(voxel_activity_dataframe)
+
+    def get_component_output_by_time_and_ids(
+        self, decay_time: float, component_ids: List[List]
+    ) -> ComponentOutput:
+        comp_mesh_activity = self.get_component_mesh_activity_by_time_and_ids(
+            decay_time=decay_time, component_ids=component_ids
+        )
+
+        comp_mesh_activity = classify_waste(comp_mesh_activity, self.isotope_criteria)
+
+        return ComponentOutput(
+            name=f"{format_time_seconds_to_str(decay_time)}_by_component",
+            data_mesh_activity=comp_mesh_activity,
+        )
+
+    def get_component_mesh_activity_by_time_and_ids(
+        self, decay_time: float, component_ids: List[List]
+    ) -> DataMeshActivity:
+        component_series: List[pd.Series] = []
+        for component_name, cell_ids in component_ids:
+            filtered_activity = self.data_absolute_activity.get_filtered_dataframe(
+                decay_times=[decay_time],
+                cells=cell_ids,
+            )[KEY_ABSOLUTE_ACTIVITY]
+
+            # A component may contain several voxels and cells, sum the absolute
+            # activity of those
+            combined_activity = filtered_activity.groupby([KEY_ISOTOPE]).sum()
+
+            # Calculate the specific activity in Bq/g
+            mass_of_component = self.data_mesh_info.data_mass.get_mass_from_cells(
+                cell_ids
+            )
+            voxel_specific_activity = combined_activity.div(
+                mass_of_component, fill_value=0.0
+            )
+
+            voxel_specific_activity.name = component_name
+            voxel_specific_activity[KEY_MASS_GRAMS] = mass_of_component
+            component_series.append(voxel_specific_activity)
+
+        # Prepare the dataframe for DataMeshActivity
+        activities = pd.concat(component_series, axis=1)
+        activities = activities.transpose()
+        activities.fillna(0.0, inplace=True)
+        activities.index.name = KEY_VOXEL
+        activities.columns.name = None
+
+        return DataMeshActivity(activities)
 
     def apply_filter_include_cells(self, cells_to_include: List[int]):
         # Filter DataAbsoluteActivity

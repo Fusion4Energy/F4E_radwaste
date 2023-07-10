@@ -37,6 +37,10 @@ class DataMass(DataFrameValidator):
         voxel_masses = filtered_dataframe[KEY_MASS_GRAMS].groupby(KEY_VOXEL).sum()
         return list(cells), voxel_masses
 
+    def get_mass_from_cells(self, cell_ids: List[int]) -> float:
+        filtered_dataframe = self.get_filtered_dataframe(cells=cell_ids)
+        return filtered_dataframe[KEY_MASS_GRAMS].sum()
+
     @property
     def materials(self) -> np.ndarray:
         return self._dataframe.index.unique(level=KEY_MATERIAL).values

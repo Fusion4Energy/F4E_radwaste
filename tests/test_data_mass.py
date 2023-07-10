@@ -70,5 +70,11 @@ class DataMassTests(unittest.TestCase):
         )
         self.assertListEqual([11, 12], cells)
 
+    def test_get_mass_from_cells(self):
+        result = self.data_mass.get_mass_from_cells([11, 12])
+        expected = 2.34 + 3.13 + 1.09
+
+        self.assertAlmostEqual(result, expected)
+
     def test_materials(self):
         np.testing.assert_array_equal(self.data_mass.materials, np.array([10, 20, 40]))

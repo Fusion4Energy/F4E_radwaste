@@ -31,7 +31,10 @@ from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import (
     InputData,
 )
-from f4e_radwaste.post_processing.post_processing import process_input_data_by_material
+from f4e_radwaste.post_processing.post_processing import (
+    process_input_data_by_material,
+    process_input_data_by_components,
+)
 
 
 class PostProcessingTests(unittest.TestCase):
@@ -112,3 +115,17 @@ class PostProcessingTests(unittest.TestCase):
 
         vtk_files = os.listdir(self.folder_paths.vtk_results)
         self.assertTrue("Time 1.00s with materials [30].vts" in vtk_files)
+
+    def test_process_input_data_by_components(self):
+        component_ids = [
+            ["Component_1", [1, 2]],
+            ["Component_2", [3]],
+            ["Empty component", [99999]],
+        ]
+        process_input_data_by_components(
+            self.input_data, self.folder_paths, component_ids
+        )
+
+        csv_files = os.listdir(self.folder_paths.csv_results)
+        self.assertTrue("1.00s_by_component.csv" in csv_files)
+        self.assertTrue("2.00s_by_component.csv" in csv_files)

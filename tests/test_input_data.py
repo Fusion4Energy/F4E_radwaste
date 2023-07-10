@@ -22,12 +22,17 @@ from f4e_radwaste.constants import (
     KEY_CSA_DECLARATION,
     KEY_HALF_LIFE,
     CoordinateType,
+    KEY_RADWASTE_CLASS,
+    KEY_IRAS,
+    KEY_TOTAL_SPECIFIC_ACTIVITY,
+    KEY_RELEVANT_SPECIFIC_ACTIVITY,
 )
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
+from f4e_radwaste.post_processing.component_output import ComponentOutput
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import (
     InputData,
@@ -70,7 +75,7 @@ class InputDataTests(unittest.TestCase):
 
         # DataIsotopeCriteria
         data = {
-            KEY_ISOTOPE: ["H3", "Be10", "C14", "Na22", "Al26"],
+            KEY_ISOTOPE: ["H3", "Be10", "C14", "Na22", "Fe55"],
             KEY_HALF_LIFE: [3.89e08, 5.05e13, 1.81e11, 8.21e07, 2.27e13],
             KEY_CSA_DECLARATION: [10, 0.0001, 10, 1, np.nan],
             KEY_LMA: [2e5, 5.10e03, 9.2e4, 1.3e8, np.nan],
@@ -168,6 +173,62 @@ class InputDataTests(unittest.TestCase):
         pd.testing.assert_frame_equal(
             data_mesh_activity._dataframe, expected_mesh_activity._dataframe
         )
+
+    def test_get_component_output_by_time_and_ids(self):
+        component_ids = [
+            ["Component_1", [1, 2]],
+            ["Component_2", [3]],
+            ["Empty component", [99999]],
+        ]
+        component_output = self.input_data.get_component_output_by_time_and_ids(
+            decay_time=1, component_ids=component_ids
+        )
+
+        self.assertIsInstance(component_output, ComponentOutput)
+
+        # Expected dataframe
+        data = {
+            KEY_VOXEL: ["Component_1", "Component_2", "Empty component"],
+            KEY_RADWASTE_CLASS: [0, 0, 0],
+            KEY_IRAS: [0.0004, 0.0002, 0.0000],
+            KEY_LMA: [0, 0, 0],
+            KEY_TOTAL_SPECIFIC_ACTIVITY: [0.6, 0.2, 0.0],
+            KEY_RELEVANT_SPECIFIC_ACTIVITY: [0.4, 0.2, 0.0],
+            "Fe55": [1 / 5, 0.0, 0.0],
+            "H3": [2 / 5, 2 / 10, 0.0],
+            KEY_MASS_GRAMS: [5, 10, 0.0],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_VOXEL], inplace=True)
+
+        pd.testing.assert_frame_equal(
+            df, component_output.data_mesh_activity._dataframe
+        )
+        self.assertEqual("1.00s_by_component", component_output.name)
+
+    def test_get_component_mesh_activity_by_time_and_ids(self):
+        component_ids = [
+            ["Component_1", [1, 2]],
+            ["Component_2", [3]],
+            ["Empty component", [99999]],
+        ]
+        comp_mesh_act = self.input_data.get_component_mesh_activity_by_time_and_ids(
+            decay_time=1, component_ids=component_ids
+        )
+
+        self.assertIsInstance(comp_mesh_act, DataMeshActivity)
+
+        # Expected dataframe
+        data = {
+            KEY_VOXEL: ["Component_1", "Component_2", "Empty component"],
+            "Fe55": [1 / 5, 0.0, 0.0],
+            "H3": [2 / 5, 2 / 10, 0.0],
+            KEY_MASS_GRAMS: [5, 10, 0.0],
+        }
+        df = pd.DataFrame(data)
+        df.set_index([KEY_VOXEL], inplace=True)
+
+        pd.testing.assert_frame_equal(df, comp_mesh_act._dataframe)
 
     def test_apply_filter_include_cells(self):
         input_data = deepcopy(self.input_data)
