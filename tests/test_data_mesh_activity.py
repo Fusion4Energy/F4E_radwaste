@@ -50,7 +50,7 @@ class DataMeshActivityTests(unittest.TestCase):
         filtered_df = self.data_mesh_activity.get_filtered_dataframe(voxels=[2, 3])
         pd.testing.assert_frame_equal(filtered_df, expected_df)
 
-    def test_get_filtered_dataframe_by_isotopes(self):
+    def test_get_filtered_dataframe_by_columns(self):
         data = {
             KEY_VOXEL: [1, 2, 3, 4],
             "Fe55": [0.3333, 0.555, 5.32e3, 0.444],
@@ -58,7 +58,7 @@ class DataMeshActivityTests(unittest.TestCase):
         expected_df = pd.DataFrame(data)
         expected_df.set_index([KEY_VOXEL], inplace=True)
 
-        filtered_df = self.data_mesh_activity.get_filtered_dataframe(isotopes=["Fe55"])
+        filtered_df = self.data_mesh_activity.get_filtered_dataframe(columns=["Fe55"])
         pd.testing.assert_frame_equal(filtered_df, expected_df)
 
     def test_add_columns_format_valid(self):

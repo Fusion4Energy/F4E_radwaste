@@ -12,15 +12,15 @@ class DataMeshActivity(DataFrameValidator):
     EXPECTED_COLUMNS = [KEY_MASS_GRAMS]
 
     def get_filtered_dataframe(
-        self, voxels: Optional[List[int]] = None, isotopes: Optional[List[str]] = None
+        self, voxels: Optional[List[int]] = None, columns: Optional[List[str]] = None
     ) -> pd.DataFrame:
         filters = {KEY_VOXEL: voxels}
         filtered_dataframe = super().get_filtered_dataframe(**filters)
 
-        # Return only the columns with names that match the isotopes provided
-        if isotopes is not None:
-            matching_isotopes = filtered_dataframe.columns.intersection(isotopes)
-            return filtered_dataframe[matching_isotopes]
+        # Return only the columns with names that match the names provided
+        if columns is not None:
+            matching_columns = filtered_dataframe.columns.intersection(columns)
+            return filtered_dataframe[matching_columns]
 
         return filtered_dataframe
 

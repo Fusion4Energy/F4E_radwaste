@@ -19,7 +19,7 @@ def classify_waste(
 ) -> DataMeshActivity:
     # Get the activity of all isotopes
     all_isotopes_activity = data_mesh_activity.get_filtered_dataframe(
-        isotopes=isotope_criteria.all_isotopes_names
+        columns=isotope_criteria.all_isotopes_names
     )
 
     # Calculate radwaste relevant parameters
@@ -36,7 +36,7 @@ def classify_waste(
 
     # Get the activity of relevant isotopes (have a TFA class)
     relevant_isotopes_activity = data_mesh_activity.get_filtered_dataframe(
-        isotopes=isotope_criteria.relevant_isotopes_names
+        columns=isotope_criteria.relevant_isotopes_names
     )
     total_relevant_activity = relevant_isotopes_activity.sum(axis=1)
 
