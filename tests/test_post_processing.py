@@ -83,10 +83,26 @@ class PostProcessingTests(unittest.TestCase):
         df.set_index([KEY_ISOTOPE], inplace=True)
         data_isotope_criteria = DataIsotopeCriteria(df)
 
+        dose_1_m_factors = pd.Series(
+            index=["He8", "Fe55", "Be11", "B12", "B13", "B14"],
+            data=[1.40e-08, 8.49e-10, 1.59e-08, 5.87e-10, 3.11e-09, 5.55e-08],
+        )
+
+        cdr_factors = pd.DataFrame(
+            index=["He8", "Fe55", "Be11", "B12", "B13", "B14"],
+            data={
+                "H": [1.09e-07, 4.80e-09, 2.59e-07, 1.08e-08, 5.07e-08, 1.24e-06],
+                "He": [2.17e-07, 9.53e-09, 5.07e-07, 2.11e-08, 9.98e-08, 2.41e-06],
+                "Li": [2.51e-07, 1.10e-08, 5.80e-07, 2.42e-08, 1.15e-07, 2.74e-06],
+            },
+        )
+
         self.input_data = InputData(
             data_absolute_activity=data_absolute_activity,
             data_mesh_info=data_mesh_info,
             isotope_criteria=data_isotope_criteria,
+            dose_1_m_factors=dose_1_m_factors,
+            cdr_factors=cdr_factors,
         )
 
         # Temporary folder

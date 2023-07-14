@@ -7,6 +7,7 @@ import pandas as pd
 from f4e_radwaste.readers.dose_matrix_file import (
     read_dose_1_m_factors,
     read_contact_dose_rate_factors,
+    GEOMETRIC_FACTOR_1_M,
 )
 
 EXAMPLE_FILE = """Absorbed doses from kerma-in-air...,,,,
@@ -26,8 +27,8 @@ class MeshInfoFileTests(unittest.TestCase):
             dose_1_m_factors = read_dose_1_m_factors("test.dat")
 
         self.assertIsInstance(dose_1_m_factors, pd.Series)
-        self.assertAlmostEqual(dose_1_m_factors["He8"], 1.40e-08)
-        self.assertAlmostEqual(dose_1_m_factors["B14"], 5.55e-08)
+        self.assertAlmostEqual(dose_1_m_factors["He8"], 1.40e-08 * GEOMETRIC_FACTOR_1_M)
+        self.assertAlmostEqual(dose_1_m_factors["B14"], 5.55e-08 * GEOMETRIC_FACTOR_1_M)
 
     def test_read_contact_dose_rate_factors(self):
         with patch("builtins.open", return_value=StringIO(EXAMPLE_FILE)):

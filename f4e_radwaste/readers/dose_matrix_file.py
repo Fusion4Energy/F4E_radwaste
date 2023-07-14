@@ -1,4 +1,8 @@
+import numpy as np
 import pandas as pd
+
+
+GEOMETRIC_FACTOR_1_M = 1 / (np.pi * (100**2))
 
 
 def read_dose_1_m_factors(file_path) -> pd.Series:
@@ -10,7 +14,8 @@ def read_dose_1_m_factors(file_path) -> pd.Series:
         header=None,
     )
     df_dose_1_m_factors.index.name = None
-    return df_dose_1_m_factors[1]
+    df_dose_1_m_factors = df_dose_1_m_factors[1] * GEOMETRIC_FACTOR_1_M
+    return df_dose_1_m_factors
 
 
 def read_contact_dose_rate_factors(file_path) -> pd.DataFrame:

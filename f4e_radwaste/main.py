@@ -18,10 +18,15 @@ from f4e_radwaste.readers.component_ids_file import (
     get_component_ids_from_folder,
     get_relevant_cells_from_components,
 )
+from f4e_radwaste.readers.dose_matrix_file import (
+    read_dose_1_m_factors,
+    read_contact_dose_rate_factors,
+)
 
 FILENAME_MESHINFO = "meshinfo"
 FILENAME_DGS_DATA = "DGSdata.dat"
 PATH_TO_CRITERIA_FILE = Path(__file__).parent / "resources/criteria.json"
+PATH_TO_DOSE_FACTORS_FILE = Path(__file__).parent / "resources/dosematrix.csv"
 FOLDER_NAME_DATA_TABLES = "data_tables"
 FOLDER_NAME_CSV = "csv_files"
 FOLDER_NAME_VTK = "vtk_files"
@@ -93,8 +98,17 @@ def load_input_data_from_folder(folder_path: Path) -> InputData:
     data_absolute_activity = dgs_file.read_file(folder_path / FILENAME_DGS_DATA)
     data_mesh_info = mesh_info_file.read_file(folder_path / FILENAME_MESHINFO)
     isotope_criteria = isotope_criteria_file.read_file(PATH_TO_CRITERIA_FILE)
-    return InputData(data_absolute_activity, data_mesh_info, isotope_criteria)
+    dose_1_m_factors = read_dose_1_m_factors(PATH_TO_DOSE_FACTORS_FILE)
+    cdr_factors = read_contact_dose_rate_factors(PATH_TO_DOSE_FACTORS_FILE)
+
+    return InputData(
+        data_absolute_activity,
+        data_mesh_info,
+        isotope_criteria,
+        dose_1_m_factors,
+        cdr_factors,
+    )
 
 
 if __name__ == "__main__":
-    filtered_process(Path(r"D:\WORK\tryingSimple\tests\old_data\ivvs_cart"))
+    standard_process(Path(r"D:\WORK\tryingSimple\tests\old_data\ivvs_cart"))
