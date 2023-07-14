@@ -4,3 +4,4 @@ htmlcov
 old_data
 *.prof
 delete.py
+*.xlsx
