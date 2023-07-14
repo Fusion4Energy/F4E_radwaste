@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-GEOMETRIC_FACTOR_1_M = 1 / (np.pi * (100**2))
+GEOMETRIC_FACTOR_1_M = 1 / (np.pi * (100**2))  # The 1 meter is 100 cm
 
 
 def read_dose_1_m_factors(file_path) -> pd.Series:
