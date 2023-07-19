@@ -15,7 +15,6 @@ from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.helpers import format_time_seconds_to_str
-from f4e_radwaste.post_processing.calculate_dose_rates import calculate_dose_at_1_meter
 from f4e_radwaste.post_processing.classify_waste import classify_waste
 from f4e_radwaste.post_processing.component_output import ComponentOutput
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
@@ -51,9 +50,6 @@ class InputData:
         )
 
         data_mesh_activity = classify_waste(data_mesh_activity, self.isotope_criteria)
-        data_mesh_activity = calculate_dose_at_1_meter(
-            data_mesh_activity, self.dose_1_m_factors
-        )
 
         return MeshOutput(
             name=create_name_by_time_and_materials(decay_time, materials),
@@ -102,9 +98,6 @@ class InputData:
         )
 
         comp_mesh_activity = classify_waste(comp_mesh_activity, self.isotope_criteria)
-        comp_mesh_activity = calculate_dose_at_1_meter(
-            comp_mesh_activity, self.dose_1_m_factors
-        )
 
         return ComponentOutput(
             name=f"{format_time_seconds_to_str(decay_time)}_by_component",
