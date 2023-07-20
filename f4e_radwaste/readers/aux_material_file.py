@@ -74,10 +74,9 @@ def _calculate_element_mix_from_isotopes(
 
     elements = _convert_element_number_to_symbols(ids_and_proportions.keys())
 
-    return pd.Series(
-        index=elements,
-        data=ids_and_proportions.values(),
-    )
+    element_mix = pd.Series(index=elements, data=ids_and_proportions.values())
+    element_mix = _normalize_series(element_mix)
+    return element_mix
 
 
 def _convert_element_number_to_symbols(element_ids):
@@ -89,6 +88,5 @@ def _convert_element_number_to_symbols(element_ids):
     return elements
 
 
-read_element_mixes_of_materials(
-    Path(r"D:\WORK\Radwaste\05_IVVS_calculation\02_Activation\IVVS_05")
-)
+def _normalize_series(series: pd.Series):
+    return series / series.sum()

@@ -26,8 +26,6 @@ class InputData:
     data_absolute_activity: DataAbsoluteActivity
     data_mesh_info: DataMeshInfo
     isotope_criteria: DataIsotopeCriteria
-    dose_1_m_factors: pd.Series
-    cdr_factors: pd.DataFrame
 
     def save_data_tables(self, folder_paths: FolderPaths):
         self.data_absolute_activity.save_dataframe_to_hdf5(folder_paths.data_tables)

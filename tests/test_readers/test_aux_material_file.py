@@ -54,8 +54,20 @@ class MCNPOutputFileTests(unittest.TestCase):
             ),
         }
 
+        # The mixes may not exactly sum 1.0, we normalize them to ensure that
+        expected_element_mixes[4] /= expected_element_mixes[4].sum()
+        expected_element_mixes[29] /= expected_element_mixes[29].sum()
+
         with patch("builtins.open", return_value=StringIO(EXAMPLE_AUX_MATERIAL_FILE)):
             result = read_element_mixes_of_materials(Path("folder"))
 
         pd.testing.assert_series_equal(expected_element_mixes[4], result[4])
         pd.testing.assert_series_equal(expected_element_mixes[29], result[29])
+
+    def test_read_element_mixes_of_materials_wrong_file(self):
+        wrong_file = """
+        BAD FILE
+        """
+        with self.assertRaises(RuntimeError):
+            with patch("builtins.open", return_value=StringIO(wrong_file)):
+                read_element_mixes_of_materials(Path("folder"))
