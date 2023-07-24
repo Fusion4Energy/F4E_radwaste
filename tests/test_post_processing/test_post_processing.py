@@ -27,6 +27,7 @@ from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivit
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
+from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import (
     InputData,
@@ -89,6 +90,38 @@ class PostProcessingTests(unittest.TestCase):
             isotope_criteria=data_isotope_criteria,
         )
 
+        # DoseCalculator
+        dose_1_m_factors = pd.Series(
+            index=["He8", "Be7", "Be11", "B12", "B13", "B14"],
+            data=[1.40e-08, 8.49e-10, 1.59e-08, 5.87e-10, 3.11e-09, 5.55e-08],
+        )
+        cdr_factors = pd.DataFrame(
+            index=["He8", "Fe55", "Be11", "B12", "B13", "B14"],
+            data={
+                "H": [1.09e-07, 4.80e-09, 2.59e-07, 1.08e-08, 5.07e-08, 1.24e-06],
+                "He": [2.17e-07, 9.53e-09, 5.07e-07, 2.11e-08, 9.98e-08, 2.41e-06],
+                "Li": [2.51e-07, 1.10e-08, 5.80e-07, 2.42e-08, 1.15e-07, 2.74e-06],
+            },
+        )
+        material_mix_10 = pd.Series(
+            index=["He", "H"],
+            data=[0.6, 0.4],
+        )
+        material_mix_20 = pd.Series(
+            index=["Be", "B"],
+            data=[0.5, 0.5],
+        )
+        material_mixes_by_id = {
+            10: material_mix_10,
+            20: material_mix_20,
+            30: material_mix_20,
+        }
+        self.dose_calculator = DoseCalculator(
+            dose_1_m_factors=dose_1_m_factors,
+            cdr_factors=cdr_factors,
+            element_mix_by_material_id=material_mixes_by_id,
+        )
+
         # Temporary folder
         self.dir_inputs = tempfile.mkdtemp()
         self.dir_tables = tempfile.mkdtemp()
@@ -123,7 +156,7 @@ class PostProcessingTests(unittest.TestCase):
             ["Empty component", [99999]],
         ]
         process_input_data_by_components(
-            self.input_data, self.folder_paths, component_ids
+            self.input_data, self.folder_paths, component_ids, self.dose_calculator
         )
 
         csv_files = os.listdir(self.folder_paths.csv_results)

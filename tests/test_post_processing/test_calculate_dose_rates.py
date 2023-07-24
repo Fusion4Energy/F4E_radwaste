@@ -33,12 +33,12 @@ class CalculateDoseRatesTests(unittest.TestCase):
         self.dose_calculator = DoseCalculator(
             dose_1_m_factors=dose_1_m_factors,
             cdr_factors=cdr_factors,
-            material_mixes_by_id=material_mixes_by_id,
+            element_mix_by_material_id=material_mixes_by_id,
         )
 
         # DataMeshActivity
         data = {
-            KEY_VOXEL: [1, 2, 3, 4],
+            KEY_VOXEL: ["Component 1", "Component 2", "Component 3", "Component 4"],
             KEY_MASS_GRAMS: [5, 5, 5, 3],
             "H3": [4, 4, 4, 4],
             "Be11": [5, 5, 8e12, 5e99],
@@ -49,46 +49,56 @@ class CalculateDoseRatesTests(unittest.TestCase):
         df.set_index([KEY_VOXEL], inplace=True)
         self.data_mesh_activity = DataMeshActivity(df)
 
-    def test_calculate_cdr_factors_for_element_mix(self):
-        element_mix = pd.Series(
-            index=["He", "H"],
-            data=[0.6, 0.4],
+        # Material proportions
+        self.material_proportions = [
+            pd.Series({12: 1.0}),
+            pd.Series({12: 1.0}),
+            pd.Series({12: 1.0}),
+            pd.Series({0: 1.0}),
+        ]
+
+    def test_calculate_doses(self):
+        cdr_factors_list = self.dose_calculator.calculate_cdr_factors_list(
+            self.material_proportions
         )
-
-        cdr_factors_mix = self.dose_calculator._calculate_cdr_factors_for_element_mix(
-            element_mix
-        )
-
-        self.assertEqual(cdr_factors_mix["Fe55"], 0.4 * 4.80e-09 + 0.6 * 9.53e-09)
-
-    def test_calculate_element_mix_from_material_id_proportion(self):
-        element_mix = (
-            self.dose_calculator._calculate_element_mix_from_material_id_proportion(
-                {12: 0.1, 99: 0.9}
-            )
-        )
-        expected_he = 0.1 * 0.6
-        expected_be = 0.9 * 0.5
-
-        self.assertAlmostEqual(expected_he, element_mix["He"])
-        self.assertAlmostEqual(expected_be, element_mix["Be"])
-
-    def test_calculate_doses_single_material(self):
         result_data_mesh_activity = self.dose_calculator.calculate_doses(
-            self.data_mesh_activity, {12: 1.0}
+            self.data_mesh_activity, cdr_factors_list
         )
         result_df = result_data_mesh_activity._dataframe
 
         # Dose at 1 meter
-        expected_voxel_1 = 5 * 1.59e-08 + 3 * 5.55e-08
-        expected_voxel_4 = 5e99 * 1.59e-08 + 3 * 5.55e-08
+        expected_comp_1 = 5 * 1.59e-08 + 3 * 5.55e-08
+        expected_comp_4 = 5e99 * 1.59e-08 + 3 * 5.55e-08
 
-        self.assertAlmostEqual(result_df[KEY_DOSE_1_METER][1], expected_voxel_1)
-        self.assertAlmostEqual(result_df[KEY_DOSE_1_METER][4], expected_voxel_4)
+        self.assertAlmostEqual(
+            result_df[KEY_DOSE_1_METER]["Component 1"], expected_comp_1
+        )
+        self.assertAlmostEqual(
+            result_df[KEY_DOSE_1_METER]["Component 4"], expected_comp_4
+        )
 
         # Contact dose rate
         factor_be11 = 5.07e-07 * 0.6 + 2.59e-07 * 0.4
         factor_b14 = 2.41e-06 * 0.6 + 1.24e-06 * 0.4
-        expected_voxel_1 = 5 * factor_be11 + 3 * factor_b14
+        expected_comp_1 = 5 * factor_be11 + 3 * factor_b14
 
-        self.assertAlmostEqual(result_df[KEY_CDR][1], expected_voxel_1)
+        self.assertAlmostEqual(result_df[KEY_CDR][1], expected_comp_1)
+
+    def test_calculate_cdr_factors_list(self):
+        material_id_proportions = [pd.Series({12: 1.0}), pd.Series({12: 0.4, 99: 0.6})]
+        cdr_factors_list = self.dose_calculator.calculate_cdr_factors_list(
+            material_id_proportions
+        )
+
+        cdr_fe55_second_row = 0.4 * 0.4 * 4.80e-09 + 0.4 * 0.6 * 9.53e-09
+
+        self.assertAlmostEqual(cdr_fe55_second_row, cdr_factors_list[1]["Fe55"])
+
+    def test_calculate_element_mixes(self):
+        material_id_proportions = [pd.Series({12: 1.0}), pd.Series({12: 0.4, 99: 0.6})]
+        element_mixes = self.dose_calculator._calculate_element_mixes(
+            material_id_proportions
+        )
+
+        self.assertAlmostEqual(0.4, element_mixes[0]["H"])
+        self.assertAlmostEqual(0.4 * 0.4, element_mixes[1]["H"])

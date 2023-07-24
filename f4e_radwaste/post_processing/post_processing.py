@@ -1,5 +1,6 @@
 from typing import List
 
+from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import InputData
 
@@ -24,13 +25,18 @@ def process_input_data_by_material(input_data: InputData, folder_paths: FolderPa
 
 
 def process_input_data_by_components(
-    input_data: InputData, folder_paths: FolderPaths, component_ids: List[List]
+    input_data: InputData,
+    folder_paths: FolderPaths,
+    component_ids: List[List],
+    dose_calculator: DoseCalculator,
 ):
     decay_times = input_data.data_absolute_activity.decay_times
 
     for decay_time in decay_times:
         component_output = input_data.get_component_output_by_time_and_ids(
-            decay_time=decay_time, component_ids=component_ids
+            decay_time=decay_time,
+            component_ids=component_ids,
+            dose_calculator=dose_calculator,
         )
 
         component_output.save(folder_paths)

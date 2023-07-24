@@ -41,6 +41,20 @@ class DataMass(DataFrameValidator):
         filtered_dataframe = self.get_filtered_dataframe(cells=cell_ids)
         return filtered_dataframe[KEY_MASS_GRAMS].sum()
 
+    def calculate_material_id_proportions(
+        self, cell_ids: List[List[int]]
+    ) -> List[pd.Series]:
+        mat_id_proportions = []
+
+        for comp_cell_ids in cell_ids:
+            df = self.get_filtered_dataframe(cells=comp_cell_ids)
+            masses_by_material = df.groupby(KEY_MATERIAL).sum()
+            mat_id_proportion = masses_by_material / masses_by_material.sum()
+            mat_id_proportion = mat_id_proportion[KEY_MASS_GRAMS]
+            mat_id_proportions.append(mat_id_proportion)
+
+        return mat_id_proportions
+
     @property
     def materials(self) -> np.ndarray:
         return self._dataframe.index.unique(level=KEY_MATERIAL).values

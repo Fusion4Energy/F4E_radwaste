@@ -78,3 +78,16 @@ class DataMassTests(unittest.TestCase):
 
     def test_materials(self):
         np.testing.assert_array_equal(self.data_mass.materials, np.array([10, 20, 40]))
+
+    def test_calculate_material_id_proportions(self):
+        result = self.data_mass.calculate_material_id_proportions(
+            cell_ids=[[11, 12], [14]]
+        )
+
+        first_comp_mat_10_proportion = result[0][10]
+        last_comp_mat_40_proportion = result[-1][40]
+
+        self.assertAlmostEqual(
+            (2.34 + 1.09) / (2.34 + 1.09 + 3.13), first_comp_mat_10_proportion
+        )
+        self.assertAlmostEqual(1, last_comp_mat_40_proportion)

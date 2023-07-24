@@ -15,8 +15,10 @@ from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.helpers import format_time_seconds_to_str
+from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
 from f4e_radwaste.post_processing.classify_waste import classify_waste
 from f4e_radwaste.post_processing.component_output import ComponentOutput
+from f4e_radwaste.post_processing.components_info import ComponentsInfo
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.mesh_ouput import MeshOutput
 
@@ -89,13 +91,29 @@ class InputData:
         return DataMeshActivity(voxel_activity_dataframe)
 
     def get_component_output_by_time_and_ids(
-        self, decay_time: float, component_ids: List[List]
+        self,
+        decay_time: float,
+        component_ids: List[List],
+        dose_calculator: DoseCalculator,
     ) -> ComponentOutput:
         comp_mesh_activity = self.get_component_mesh_activity_by_time_and_ids(
             decay_time=decay_time, component_ids=component_ids
         )
 
         comp_mesh_activity = classify_waste(comp_mesh_activity, self.isotope_criteria)
+
+        ComponentsInfo(component_ids, self.data_mesh_info.data_mass, dose_calculator)
+        dose_calculator.calculate_doses(
+            comp_activity=comp_mesh_activity,
+            cdr_factor_columns=)
+
+        # data_mass = self.data_mesh_info.data_mass
+        # material_proportions = data_mass.calculate_material_proportions(
+        #     component_ids=component_ids
+        # )
+        # comp_mesh_activity = dose_calculator.calculate_doses(
+        #     comp_mesh_activity, material_proportions
+        # )
 
         return ComponentOutput(
             name=f"{format_time_seconds_to_str(decay_time)}_by_component",
