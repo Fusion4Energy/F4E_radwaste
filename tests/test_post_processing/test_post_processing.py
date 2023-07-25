@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -28,13 +29,17 @@ from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mass import DataMass
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
+from f4e_radwaste.post_processing.components_info import ComponentsInfo
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import (
     InputData,
 )
 from f4e_radwaste.post_processing.post_processing import (
-    process_input_data_by_material,
-    process_input_data_by_components,
+    get_folder_paths,
+    load_input_data_from_folder,
+    StandardProcessor,
+    ByComponentProcessor,
+    FilteredProcessor,
 )
 
 
@@ -122,7 +127,7 @@ class PostProcessingTests(unittest.TestCase):
             element_mix_by_material_id=material_mixes_by_id,
         )
 
-        # Temporary folder
+        # Temporary FolderPaths
         self.dir_inputs = tempfile.mkdtemp()
         self.dir_tables = tempfile.mkdtemp()
         self.dir_csv = tempfile.mkdtemp()
@@ -134,14 +139,71 @@ class PostProcessingTests(unittest.TestCase):
             vtk_results=Path(self.dir_vtk),
         )
 
-    def tearDown(self):
-        shutil.rmtree(self.dir_tables)
-        shutil.rmtree(self.dir_csv)
-        shutil.rmtree(self.dir_vtk)
-        shutil.rmtree(self.dir_inputs)
+        # Temporary auxiliary folders
+        self.test_dir_empty = tempfile.mkdtemp()
+        self.test_dir_filled = tempfile.mkdtemp()
+        path_data_tables = Path(self.test_dir_filled) / "data_tables"
+        os.mkdir(path_data_tables)
+        with open(path_data_tables / "test.txt", "w") as infile:
+            infile.write("Hello world!")
+
+        # Test folder data
+        self.input_folder_path = Path(__file__).parents[1] / "data/test_folder_cart"
+
+    def test_standard_processor_init(self):
+        processor = StandardProcessor(self.input_folder_path)
+
+        self.assertIsInstance(processor, StandardProcessor)
+
+    def test_standard_processor_process(self):
+        processor = StandardProcessor(self.input_folder_path)
+        processor.input_data = self.input_data
+        processor.folder_paths = self.folder_paths
+
+        StandardProcessor.process(processor)
+
+        data_tables = os.listdir(self.folder_paths.data_tables)
+        self.assertTrue("DataAbsoluteActivity.hdf5" in data_tables)
+        self.assertTrue("DataMass.hdf5" in data_tables)
+        self.assertTrue("DataMeshInfo.json" in data_tables)
+
+    def test_filtered_processor_init(self):
+        processor = FilteredProcessor(self.input_folder_path)
+        self.assertIsInstance(processor, FilteredProcessor)
+
+        data_mass = processor.input_data.data_mesh_info.data_mass
+        data_mass_index = data_mass.get_filtered_dataframe().index
+        data_mass_cells = data_mass_index.get_level_values(KEY_CELL).unique().values
+        self.assertListEqual([309485], list(data_mass_cells))
+
+        activity = processor.input_data.data_absolute_activity
+        activity_index = activity.get_filtered_dataframe().index
+        activity_cells = activity_index.get_level_values(KEY_CELL).unique().values
+        self.assertListEqual([1], list(activity_cells))
+
+    def test_by_component_processor_init(self):
+        processor = ByComponentProcessor(self.input_folder_path)
+
+        self.assertIsInstance(processor, ByComponentProcessor)
+
+    def test_by_component_processor_process(self):
+        processor = ByComponentProcessor(self.input_folder_path)
+        processor.input_data = self.input_data
+        processor.folder_paths = self.folder_paths
+
+        ByComponentProcessor.process(processor)
+
+        csv_tables = os.listdir(self.folder_paths.csv_results)
+        self.assertTrue("1.00s_by_component.csv" in csv_tables)
+        self.assertTrue("2.00s_by_component.csv" in csv_tables)
 
     def test_process_input_data_by_material(self):
-        process_input_data_by_material(self.input_data, self.folder_paths)
+        mock_standard_processor = SimpleNamespace()
+        mock_standard_processor.input_data = self.input_data
+        mock_standard_processor.folder_paths = self.folder_paths
+
+        # noinspection PyTypeChecker
+        StandardProcessor.process_input_data_by_material(mock_standard_processor)
 
         csv_files = os.listdir(self.folder_paths.csv_results)
         self.assertTrue("Time 2.00s with materials all_materials.csv" in csv_files)
@@ -155,10 +217,52 @@ class PostProcessingTests(unittest.TestCase):
             ["Component_2", [3]],
             ["Empty component", [99999]],
         ]
-        process_input_data_by_components(
-            self.input_data, self.folder_paths, component_ids, self.dose_calculator
+        components_info = ComponentsInfo(
+            component_ids=component_ids,
+            data_mass=self.input_data.data_mesh_info.data_mass,
+            dose_calculator=self.dose_calculator,
+        )
+        mock_by_component_processor = SimpleNamespace()
+        mock_by_component_processor.input_data = self.input_data
+        mock_by_component_processor.folder_paths = self.folder_paths
+        mock_by_component_processor.components_info = components_info
+        mock_by_component_processor.dose_calculator = self.dose_calculator
+
+        # noinspection PyTypeChecker
+        ByComponentProcessor.process_input_data_by_components(
+            mock_by_component_processor
         )
 
         csv_files = os.listdir(self.folder_paths.csv_results)
         self.assertTrue("1.00s_by_component.csv" in csv_files)
         self.assertTrue("2.00s_by_component.csv" in csv_files)
+
+    def test_get_folder_paths_empty(self):
+        folder_paths = get_folder_paths(Path(self.test_dir_empty))
+
+        self.assertTrue(folder_paths.input_files.is_dir())
+        self.assertTrue(folder_paths.data_tables.is_dir())
+        self.assertTrue(folder_paths.csv_results.is_dir())
+        self.assertTrue(folder_paths.vtk_results.is_dir())
+
+    def test_get_folder_paths_filled(self):
+        folder_paths = get_folder_paths(Path(self.test_dir_filled))
+
+        self.assertTrue(folder_paths.input_files.is_dir())
+        self.assertTrue(folder_paths.data_tables.is_dir())
+        self.assertTrue(folder_paths.csv_results.is_dir())
+        self.assertTrue(folder_paths.vtk_results.is_dir())
+        self.assertEqual(0, len(os.listdir(folder_paths.data_tables)))
+
+    def test_load_input_data_from_folder(self):
+        input_data = load_input_data_from_folder(self.input_folder_path)
+
+        self.assertIsInstance(input_data.data_absolute_activity, DataAbsoluteActivity)
+        self.assertIsInstance(input_data.data_mesh_info, DataMeshInfo)
+        self.assertIsInstance(input_data.isotope_criteria, DataIsotopeCriteria)
+
+    def tearDown(self):
+        shutil.rmtree(self.dir_tables)
+        shutil.rmtree(self.dir_csv)
+        shutil.rmtree(self.dir_vtk)
+        shutil.rmtree(self.dir_inputs)

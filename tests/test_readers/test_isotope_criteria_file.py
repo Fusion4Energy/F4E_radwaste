@@ -88,3 +88,8 @@ class IsotopeCriteriaTests(unittest.TestCase):
         pd.testing.assert_frame_equal(
             result._dataframe, self.data_isotope_criteria._dataframe
         )
+
+    def test_read_file_path(self):
+        result = read_file()
+
+        self.assertIsInstance(result, DataIsotopeCriteria)

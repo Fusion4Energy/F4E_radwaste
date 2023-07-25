@@ -73,3 +73,23 @@ class ComponentsInfoTests(unittest.TestCase):
         self.assertAlmostEqual(
             expected_cdr_factor_fe55_comp_1, components_info.cdr_factors[0]["Fe55"]
         )
+
+    def test_get_components(self):
+        components_info = ComponentsInfo(
+            component_ids=self.component_ids,
+            data_mass=self.data_mass,
+            dose_calculator=self.dose_calculator,
+        )
+
+        result_list = components_info.get_components()
+
+        self.assertListEqual(self.component_ids, result_list)
+
+    def test_get_all_cell_ids(self):
+        components_info = ComponentsInfo(
+            component_ids=self.component_ids,
+            data_mass=self.data_mass,
+            dose_calculator=self.dose_calculator,
+        )
+
+        self.assertListEqual([1, 2, 3, 4, 33, 44], components_info.get_all_cell_ids())

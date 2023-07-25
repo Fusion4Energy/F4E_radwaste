@@ -1,5 +1,12 @@
 from enum import Enum
 
+FOLDER_NAME_DATA_TABLES = "data_tables"
+FOLDER_NAME_CSV = "csv_files"
+FOLDER_NAME_VTK = "vtk_files"
+
+FILENAME_MESHINFO = "meshinfo"
+FILENAME_DGS_DATA = "DGSdata.dat"
+
 KEY_TIME = "Time"
 KEY_VOXEL = "Voxel"
 KEY_CELL = "Cell"

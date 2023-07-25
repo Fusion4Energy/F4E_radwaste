@@ -36,6 +36,7 @@ from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 from f4e_radwaste.data_formats.data_mesh_info import DataMeshInfo
 from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
 from f4e_radwaste.post_processing.component_output import ComponentOutput
+from f4e_radwaste.post_processing.components_info import ComponentsInfo
 from f4e_radwaste.post_processing.folder_paths import FolderPaths
 from f4e_radwaste.post_processing.input_data import (
     InputData,
@@ -128,6 +129,18 @@ class InputDataTests(unittest.TestCase):
             element_mix_by_material_id=material_mixes_by_id,
         )
 
+        # ComponentsInfo
+        component_ids = [
+            ["Component_1", [1, 2]],
+            ["Component_2", [3]],
+            ["Empty component", [99999]],
+        ]
+        self.components_info = ComponentsInfo(
+            component_ids=component_ids,
+            data_mass=data_mass,
+            dose_calculator=self.dose_calculator,
+        )
+
         # Temporary folder
         self.test_dir = tempfile.mkdtemp()
         self.folder_paths = FolderPaths(
@@ -210,14 +223,9 @@ class InputDataTests(unittest.TestCase):
         )
 
     def test_get_component_output_by_time_and_ids(self):
-        component_ids = [
-            ["Component_1", [1, 2]],
-            ["Component_2", [3]],
-            ["Empty component", [99999]],
-        ]
         component_output = self.input_data.get_component_output_by_time_and_ids(
             decay_time=1,
-            component_ids=component_ids,
+            components_info=self.components_info,
             dose_calculator=self.dose_calculator,
         )
 
@@ -227,7 +235,7 @@ class InputDataTests(unittest.TestCase):
         data = {
             KEY_VOXEL: ["Component_1", "Component_2", "Empty component"],
             KEY_DOSE_1_METER: [0.0, 0.0, 0.0],
-            KEY_CDR: [6.110400e-10, 0.000000e00, np.NaN],
+            KEY_CDR: [6.110400e-10, 0.0, 0.0],
             KEY_RADWASTE_CLASS: [0, 0, 0],
             KEY_IRAS: [0.0004, 0.0002, 0.0000],
             KEY_LMA: [0, 0, 0],
@@ -249,13 +257,8 @@ class InputDataTests(unittest.TestCase):
         )
 
     def test_get_component_mesh_activity_by_time_and_ids(self):
-        component_ids = [
-            ["Component_1", [1, 2]],
-            ["Component_2", [3]],
-            ["Empty component", [99999]],
-        ]
         comp_mesh_act = self.input_data.get_component_mesh_activity_by_time_and_ids(
-            decay_time=1, component_ids=component_ids
+            decay_time=1, components_info=self.components_info
         )
 
         self.assertIsInstance(comp_mesh_act, DataMeshActivity)

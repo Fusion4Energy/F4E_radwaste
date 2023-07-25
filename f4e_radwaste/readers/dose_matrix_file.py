@@ -1,11 +1,14 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
+PATH_TO_DOSE_FACTORS_FILE = Path(__file__).parents[1] / "resources/dosematrix.csv"
 
 GEOMETRIC_FACTOR_1_M = 1 / (np.pi * (100**2))  # The 1 meter is 100 cm
 
 
-def read_dose_1_m_factors(file_path) -> pd.Series:
+def read_dose_1_m_factors(file_path=PATH_TO_DOSE_FACTORS_FILE) -> pd.Series:
     df_dose_1_m_factors = pd.read_csv(
         file_path,
         skiprows=3,
@@ -18,7 +21,7 @@ def read_dose_1_m_factors(file_path) -> pd.Series:
     return df_dose_1_m_factors
 
 
-def read_contact_dose_rate_factors(file_path) -> pd.DataFrame:
+def read_contact_dose_rate_factors(file_path=PATH_TO_DOSE_FACTORS_FILE) -> pd.DataFrame:
     df_cdr_factors = pd.read_csv(
         file_path,
         skiprows=2,

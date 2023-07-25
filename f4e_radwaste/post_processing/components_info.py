@@ -18,3 +18,9 @@ class ComponentsInfo:
         self.cdr_factors = dose_calculator.calculate_cdr_factors_list(
             material_id_proportions=mat_id_proportions
         )
+
+    def get_components(self) -> List[List]:
+        return list(zip(self.names, self.cell_ids))
+
+    def get_all_cell_ids(self) -> List[int]:
+        return list(set(sum(self.cell_ids, [])))

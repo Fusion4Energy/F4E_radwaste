@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pandas as pd
 
@@ -13,8 +14,10 @@ from f4e_radwaste.constants import (
 )
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 
+PATH_TO_CRITERIA_FILE = Path(__file__).parents[1] / "resources/criteria.json"
 
-def read_file(path_to_criteria) -> DataIsotopeCriteria:
+
+def read_file(path_to_criteria=PATH_TO_CRITERIA_FILE) -> DataIsotopeCriteria:
     """
     Reads the JSON file with the isotope criteria and returns an instance of
     DataIsotopeCriteria.

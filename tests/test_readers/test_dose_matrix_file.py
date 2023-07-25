@@ -30,6 +30,10 @@ class MeshInfoFileTests(unittest.TestCase):
         self.assertAlmostEqual(dose_1_m_factors["He8"], 1.40e-08 * GEOMETRIC_FACTOR_1_M)
         self.assertAlmostEqual(dose_1_m_factors["B14"], 5.55e-08 * GEOMETRIC_FACTOR_1_M)
 
+    def test_read_dose_1_m_factors_path(self):
+        dose_1_m_factors = read_dose_1_m_factors()
+        self.assertIn("He8", dose_1_m_factors)
+
     def test_read_contact_dose_rate_factors(self):
         with patch("builtins.open", return_value=StringIO(EXAMPLE_FILE)):
             cdr_factors = read_contact_dose_rate_factors("test.dat")
@@ -37,3 +41,7 @@ class MeshInfoFileTests(unittest.TestCase):
             self.assertIsInstance(cdr_factors, pd.DataFrame)
             self.assertAlmostEqual(cdr_factors["Li"]["He8"], 2.51e-07)
             self.assertAlmostEqual(cdr_factors["He"]["B14"], 2.41e-06)
+
+    def test_read_contact_dose_rate_factors_path(self):
+        cdr_factors = read_contact_dose_rate_factors()
+        self.assertIn("Li", cdr_factors)

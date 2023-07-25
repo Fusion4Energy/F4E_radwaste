@@ -93,27 +93,19 @@ class InputData:
     def get_component_output_by_time_and_ids(
         self,
         decay_time: float,
-        component_ids: List[List],
+        components_info: ComponentsInfo,
         dose_calculator: DoseCalculator,
     ) -> ComponentOutput:
         comp_mesh_activity = self.get_component_mesh_activity_by_time_and_ids(
-            decay_time=decay_time, component_ids=component_ids
+            decay_time=decay_time, components_info=components_info
         )
 
         comp_mesh_activity = classify_waste(comp_mesh_activity, self.isotope_criteria)
 
-        ComponentsInfo(component_ids, self.data_mesh_info.data_mass, dose_calculator)
-        dose_calculator.calculate_doses(
+        comp_mesh_activity = dose_calculator.calculate_doses(
             comp_activity=comp_mesh_activity,
-            cdr_factor_columns=)
-
-        # data_mass = self.data_mesh_info.data_mass
-        # material_proportions = data_mass.calculate_material_proportions(
-        #     component_ids=component_ids
-        # )
-        # comp_mesh_activity = dose_calculator.calculate_doses(
-        #     comp_mesh_activity, material_proportions
-        # )
+            cdr_factor_columns=components_info.cdr_factors,
+        )
 
         return ComponentOutput(
             name=f"{format_time_seconds_to_str(decay_time)}_by_component",
@@ -121,10 +113,10 @@ class InputData:
         )
 
     def get_component_mesh_activity_by_time_and_ids(
-        self, decay_time: float, component_ids: List[List]
+        self, decay_time: float, components_info: ComponentsInfo
     ) -> DataMeshActivity:
         component_series: List[pd.Series] = []
-        for component_name, cell_ids in component_ids:
+        for component_name, cell_ids in components_info.get_components():
             filtered_activity = self.data_absolute_activity.get_filtered_dataframe(
                 decay_times=[decay_time],
                 cells=cell_ids,
