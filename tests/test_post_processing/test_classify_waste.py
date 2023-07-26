@@ -18,9 +18,9 @@ from f4e_radwaste.constants import (
     KEY_RELEVANT_SPECIFIC_ACTIVITY,
     KEY_IRAS,
     KEY_RADWASTE_CLASS,
-    TYPE_TFA,
-    TYPE_A,
-    TYPE_B,
+    TYPE_TFA_INT,
+    TYPE_A_INT,
+    TYPE_B_INT,
 )
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
@@ -72,12 +72,12 @@ class ClassifyWasteTests(unittest.TestCase):
         self.assertEqual(relevant_activity_voxel_1, 4 + 5)
         self.assertEqual(iras_voxel_1, 4 / 1000 + 5 / 100)
         self.assertEqual(lma_voxel_1, 1)
-        self.assertEqual(radwaste_class_voxel_1, TYPE_TFA)
+        self.assertEqual(radwaste_class_voxel_1, TYPE_TFA_INT)
 
         voxel_3_data = data_mesh_activity.get_filtered_dataframe(voxels=[3])
         radwaste_class_voxel_3 = voxel_3_data[KEY_RADWASTE_CLASS].values[0]
-        self.assertEqual(radwaste_class_voxel_3, TYPE_A)
+        self.assertEqual(radwaste_class_voxel_3, TYPE_A_INT)
 
         voxel_4_data = data_mesh_activity.get_filtered_dataframe(voxels=[4])
         radwaste_class_voxel_4 = voxel_4_data[KEY_RADWASTE_CLASS].values[0]
-        self.assertEqual(radwaste_class_voxel_4, TYPE_B)
+        self.assertEqual(radwaste_class_voxel_4, TYPE_B_INT)

@@ -19,6 +19,9 @@ COLOR_WHITE = "white"
 
 
 class MainWindowGUI(MainWindow):
+    overlaid_box_widget: OverlaidBoxWidget
+    results_widget: ResultsWidget
+
     def __init__(self, manager):
         self._app = QtWidgets.QApplication(sys.argv)
         super().__init__()

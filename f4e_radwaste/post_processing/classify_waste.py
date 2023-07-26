@@ -1,9 +1,9 @@
 import pandas as pd
 
 from f4e_radwaste.constants import (
-    TYPE_TFA,
-    TYPE_A,
-    TYPE_B,
+    TYPE_TFA_INT,
+    TYPE_A_INT,
+    TYPE_B_INT,
     KEY_RADWASTE_CLASS,
     KEY_IRAS,
     KEY_LMA,
@@ -30,9 +30,9 @@ def classify_waste(
     # Calculate radwaste class
     mask_iras_exceeded = iras >= 1
     mask_lma_exceeded = lma_exceeded >= 1
-    radwaste_class = pd.Series(data=TYPE_TFA, index=iras.index)
-    radwaste_class[mask_iras_exceeded] = TYPE_A
-    radwaste_class[mask_iras_exceeded * mask_lma_exceeded] = TYPE_B
+    radwaste_class = pd.Series(data=TYPE_TFA_INT, index=iras.index)
+    radwaste_class[mask_iras_exceeded] = TYPE_A_INT
+    radwaste_class[mask_iras_exceeded * mask_lma_exceeded] = TYPE_B_INT
 
     # Get the activity of relevant isotopes (have a TFA class)
     relevant_isotopes_activity = data_mesh_activity.get_filtered_dataframe(

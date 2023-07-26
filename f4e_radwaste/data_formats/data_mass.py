@@ -29,10 +29,12 @@ class DataMass(DataFrameValidator):
 
         return super().get_filtered_dataframe(**filters)
 
-    def get_cells_and_masses_from_materials(
-        self, materials: List
+    def get_cells_and_masses_from_selection(
+        self, materials: Optional[List[int]] = None, voxels: Optional[List[int]] = None
     ) -> Tuple[List[int], pd.DataFrame]:
-        filtered_dataframe = self.get_filtered_dataframe(materials=materials)
+        filtered_dataframe = self.get_filtered_dataframe(
+            materials=materials, voxels=voxels
+        )
         cells = filtered_dataframe.index.unique(level=KEY_CELL).values
         voxel_masses = filtered_dataframe[KEY_MASS_GRAMS].groupby(KEY_VOXEL).sum()
         return list(cells), voxel_masses

@@ -30,11 +30,26 @@ KEY_IRAS = "IRAS"
 KEY_RADWASTE_CLASS = "Radwaste class"
 KEY_CDR = "Contact dose rate [Sv/h]"
 KEY_DOSE_1_METER = "Dose 1 meter [Sv/h/g]"
-TYPE_TFA = 0
-TYPE_A = 1
-TYPE_B = 2
+TYPE_TFA_INT = 0
+TYPE_A_INT = 1
+TYPE_B_INT = 2
+TYPE_TFA_STR = "TFA"
+TYPE_A_STR = "Type A"
+TYPE_B_STR = "Type B"
 
 
 class CoordinateType(Enum):
     CARTESIAN = "cartesian"
     CYLINDRICAL = "cylindrical"
+
+
+def get_radwaste_class_str_from_int(value: int) -> str:
+    if value == TYPE_TFA_INT:
+        return TYPE_TFA_STR
+    if value == TYPE_A_INT:
+        return TYPE_A_STR
+    if value == TYPE_B_INT:
+        return TYPE_B_STR
+    raise ValueError(
+        "The only acceptable radwaste class values in int form are 0, 1 and 2..."
+    )

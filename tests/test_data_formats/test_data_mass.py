@@ -56,7 +56,7 @@ class DataMassTests(unittest.TestCase):
         )
         self.assertTrue(filtered_df.equals(expected_df))
 
-    def test_get_cells_and_masses_from_materials(self):
+    def test_get_cells_and_masses_from_selection(self):
         data = {
             KEY_VOXEL: [1, 2],
             KEY_MASS_GRAMS: [2.34 + 3.13, 1.09],
@@ -65,10 +65,15 @@ class DataMassTests(unittest.TestCase):
         expected_masses.set_index([KEY_VOXEL], inplace=True)
         expected_masses.columns.name = None
 
-        cells, masses = self.data_mass.get_cells_and_masses_from_materials(
+        cells, _masses = self.data_mass.get_cells_and_masses_from_selection(
             materials=[10, 20]
         )
         self.assertListEqual([11, 12], cells)
+
+        _cells, masses = self.data_mass.get_cells_and_masses_from_selection(
+            materials=[10, 20], voxels=[2]
+        )
+        self.assertListEqual([1.09], masses.to_list())
 
     def test_get_mass_from_cells(self):
         result = self.data_mass.get_mass_from_cells([11, 12])

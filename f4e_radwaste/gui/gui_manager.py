@@ -14,8 +14,8 @@ class GUIManager:
         self.grid: pv.StructuredGrid = pv.StructuredGrid()
         self.geo_meshes: dict[str, pv.DataSet] = {}
 
-        self.functions = GUIFunctions(manager=self)
-        self.main_window = MainWindowGUI(manager=self)
+        self.functions: GUIFunctions = GUIFunctions(manager=self)
+        self.main_window: MainWindowGUI = MainWindowGUI(manager=self)
 
     def start(self):
         self.functions.active = True

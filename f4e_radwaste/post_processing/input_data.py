@@ -61,7 +61,7 @@ class InputData:
         self, decay_time: float, materials: Optional[List[int]] = None
     ) -> DataMeshActivity:
         data_mass = self.data_mesh_info.data_mass
-        selected_cells, voxel_masses = data_mass.get_cells_and_masses_from_materials(
+        selected_cells, voxel_masses = data_mass.get_cells_and_masses_from_selection(
             materials
         )
 
@@ -87,6 +87,38 @@ class InputData:
 
         # Add the mass information to the dataframe
         voxel_activity_dataframe.insert(0, KEY_MASS_GRAMS, voxel_masses)
+
+        return DataMeshActivity(voxel_activity_dataframe)
+
+    def get_collapsed_activity(
+        self, decay_time: float, materials: List[int], voxels: List[int]
+    ) -> DataMeshActivity:
+        data_mass = self.data_mesh_info.data_mass
+        selected_cells, voxel_masses = data_mass.get_cells_and_masses_from_selection(
+            materials, voxels
+        )
+
+        # Get the activity only at the cells, voxels and decay time of interest
+        filtered_activity = self.data_absolute_activity.get_filtered_dataframe(
+            decay_times=[decay_time],
+            cells=selected_cells,
+            voxels=voxels,
+        )
+
+        combined_activity = filtered_activity.groupby([KEY_ISOTOPE]).sum()
+
+        # Calculate the specific activity in Bq/g
+        package_mass = voxel_masses.sum()
+        voxel_specific_activity = combined_activity.div(package_mass, fill_value=0.0)
+
+        voxel_activity_dataframe = voxel_specific_activity.T
+
+        voxel_activity_dataframe.columns.name = None
+        voxel_activity_dataframe.index = [0]
+        voxel_activity_dataframe.index.name = KEY_VOXEL
+
+        # Add the mass information to the dataframe
+        voxel_activity_dataframe.insert(0, KEY_MASS_GRAMS, package_mass)
 
         return DataMeshActivity(voxel_activity_dataframe)
 

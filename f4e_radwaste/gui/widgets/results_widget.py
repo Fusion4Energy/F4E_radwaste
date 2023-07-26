@@ -3,7 +3,9 @@ import dataclasses
 
 from qtpy import QtWidgets, QtCore
 
-from f4e_radwaste.constants import KEY_TOTAL_SPECIFIC_ACTIVITY
+from f4e_radwaste.constants import KEY_TOTAL_SPECIFIC_ACTIVITY, TYPE_B_STR
+from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
+from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
 
 from f4e_radwaste.gui.gui_helpers import (
     add_combo_box,
@@ -16,6 +18,7 @@ from f4e_radwaste.gui.gui_helpers import (
 from f4e_radwaste.gui.widgets.custom_material_mixer_widget import (
     CustomMaterialMixer,
 )
+from f4e_radwaste.post_processing.collapsed_data import CollapsedData
 
 
 class MeshSelection:
@@ -240,33 +243,31 @@ class ResultsWidget(QtWidgets.QWidget):
         self.plotting_options.check_sample_data_over_geo.setVisible(checked)
         self.plotting_options.check_log_scale.setVisible(checked)
 
-    # def update_radwaste_display(
-    #     self, package_activity: DataVoxelActivity, criteria_info: CriteriaInfo
-    # ):
-    #     radwaste_class_int = int(
-    #         package_activity.get_value(voxel=0, isotope=KEY_RADWASTE_CLASS)
-    #     )
-    #     radwaste_class_str = get_radwaste_class_str_from_int(radwaste_class_int)
-    #     self.radwaste_display.radwaste_type.setText(f"{radwaste_class_str}")
-    #     mass_float_g = package_activity.get_value(
-    #         voxel=0, isotope=COLUMN_KEY_MASS_GRAMS
-    #     )
-    #     self.radwaste_display.mass.setText(f"{mass_float_g / 1000:.2f}")
-    #     self.radwaste_display.iras.setText(
-    #         f"{package_activity.get_value(voxel=0, isotope=KEY_IRAS):.2f}"
-    #     )
-    #     self.radwaste_display.lma_isotopes.clear()
-    #     # only call this function if type B
-    #     if radwaste_class_str == "B":
-    #         lma_exceeded_isotopes = get_isotopes_exceeding_lma_inside_package(
-    #             package_activity, criteria_info
-    #         )
-    #         self.radwaste_display.lma_isotopes.addItems(lma_exceeded_isotopes)
-    #     relevant_activity = package_activity.get_value(
-    #         voxel=0, isotope=KEY_RELEVANT_SPECIFIC_ACTIVITY
-    #     )
-    #     self.radwaste_display.relevant_activity.setText(f"{relevant_activity:.2e}")
-    #     total_activity = package_activity.get_value(
-    #         voxel=0, isotope=KEY_TOTAL_SPECIFIC_ACTIVITY
-    #     )
-    #     self.radwaste_display.total_activity.setText(f"{total_activity:.2e}")
+    def update_radwaste_display(
+        self, package_activity: DataMeshActivity, isotope_criteria: DataIsotopeCriteria
+    ):
+        collapsed_data = CollapsedData(package_activity)
+
+        radwaste_class = collapsed_data.get_radwaste_class_str()
+        self.radwaste_display.radwaste_type.setText(f"{radwaste_class}")
+
+        mass_grams = collapsed_data.get_mass()
+        self.radwaste_display.mass.setText(f"{mass_grams / 1000:.2f}")
+
+        iras = collapsed_data.get_iras()
+        self.radwaste_display.iras.setText(f"{iras:.2f}")
+
+        self.radwaste_display.lma_isotopes.clear()
+        if radwaste_class == TYPE_B_STR:
+            lma_exceeded_isotopes = collapsed_data.get_isotopes_exceeding_lma(
+                isotope_criteria
+            )
+            self.radwaste_display.lma_isotopes.addItems(lma_exceeded_isotopes)
+
+        relevant_activity = collapsed_data.get_relevant_activity()
+        self.radwaste_display.relevant_activity.setText(f"{relevant_activity:.2e}")
+
+        total_activity = collapsed_data.get_total_activity()
+        self.radwaste_display.total_activity.setText(f"{total_activity:.2e}")
+
+        self.radwaste_display.total_activity.setText(f"{total_activity:.2e}")

@@ -217,32 +217,36 @@ class GUIFunctions:
         self.active = True
 
     def button_pressed_calculate_radwaste(self) -> DataMeshActivity | None:
-        pass
-        # grid = self.manager.data.grid
-        # if grid.n_cells == 0:
-        #     return
-        # box = self.manager.main_window.overlaid_box_widget.box_grid
-        # if box.n_cells == 0:
-        #     return
-        # # get the time and material from the combo boxes
-        # results_widget = self.manager.main_window.results_widget
-        # decay_time = results_widget.get_decay_time()
-        # materials = results_widget.get_materials()
-        # mask_cells_inside = self.get_mask_vtk_cells_inside_box(box, grid)
-        # voxels_inside = grid[KEY_R2S_INDICES][mask_cells_inside]
-        # pacakge_activity = collapse_data_by_time_material_and_voxels(
-        #     data_absolute_activity=self.manager.data.data_absolute_activity,
-        #     data_mass=self.manager.data.mesh_info.data_mass,
-        #     decay_time=decay_time,
-        #     materials=materials,
-        #     voxels=voxels_inside,
-        # )
-        # # add the extra columns with radwaste relevant information
-        # classify_waste(pacakge_activity, self.manager.data.criteria_info)
-        # self.manager.main_window.results_widget.update_radwaste_display(
-        #     pacakge_activity, self.manager.data.criteria_info
-        # )
-        # return pacakge_activity
+        grid = self.manager.grid
+
+        if grid.n_cells == 0:
+            return
+
+        box = self.manager.main_window.overlaid_box_widget.box_grid
+
+        if box.n_cells == 0:
+            return
+
+        # Get the time and material from the combo boxes
+        results_widget = self.manager.main_window.results_widget
+        decay_time = results_widget.get_decay_time()
+        materials = results_widget.get_materials()
+
+        mask_cells_inside = self.get_mask_vtk_cells_inside_box(box, grid)
+
+        voxels_inside = grid[KEY_R2S_INDICES][mask_cells_inside]
+
+        input_data = self.manager.processor.input_data
+        package_activity = input_data.get_collapsed_activity(
+            decay_time=decay_time, materials=materials, voxels=voxels_inside
+        )
+        pacakge_activity = classify_waste(package_activity, input_data.isotope_criteria)
+
+        self.manager.main_window.results_widget.update_radwaste_display(
+            pacakge_activity, input_data.isotope_criteria
+        )
+
+        return pacakge_activity
 
     @staticmethod
     def get_mask_vtk_cells_inside_box(box, value_grid):
