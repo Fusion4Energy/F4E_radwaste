@@ -35,7 +35,7 @@ from f4e_radwaste.post_processing.input_data import (
     InputData,
 )
 from f4e_radwaste.post_processing.post_processing import (
-    get_folder_paths,
+    create_folder_paths,
     load_input_data_from_folder,
     StandardProcessor,
     ByComponentProcessor,
@@ -237,16 +237,16 @@ class PostProcessingTests(unittest.TestCase):
         self.assertTrue("1.00s_by_component.csv" in csv_files)
         self.assertTrue("2.00s_by_component.csv" in csv_files)
 
-    def test_get_folder_paths_empty(self):
-        folder_paths = get_folder_paths(Path(self.test_dir_empty))
+    def test_create_folder_paths_empty(self):
+        folder_paths = create_folder_paths(Path(self.test_dir_empty))
 
         self.assertTrue(folder_paths.input_files.is_dir())
         self.assertTrue(folder_paths.data_tables.is_dir())
         self.assertTrue(folder_paths.csv_results.is_dir())
         self.assertTrue(folder_paths.vtk_results.is_dir())
 
-    def test_get_folder_paths_filled(self):
-        folder_paths = get_folder_paths(Path(self.test_dir_filled))
+    def test_create_folder_paths_filled(self):
+        folder_paths = create_folder_paths(Path(self.test_dir_filled))
 
         self.assertTrue(folder_paths.input_files.is_dir())
         self.assertTrue(folder_paths.data_tables.is_dir())

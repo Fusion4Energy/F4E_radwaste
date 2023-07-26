@@ -41,3 +41,9 @@ class DataAbsoluteActivity(DataFrameValidator):
     @property
     def decay_times(self) -> np.ndarray:
         return self._dataframe.index.unique(level=KEY_TIME).values
+
+    @decay_times.setter
+    def decay_times(self, decay_time_names):
+        self._dataframe.index = self._dataframe.index.set_levels(
+            decay_time_names, level=KEY_TIME
+        )

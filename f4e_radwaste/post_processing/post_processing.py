@@ -29,7 +29,7 @@ from f4e_radwaste.readers.dose_matrix_file import (
 
 class StandardProcessor:
     def __init__(self, input_folder_path: Path):
-        self.folder_paths = get_folder_paths(input_folder_path)
+        self.folder_paths = create_folder_paths(input_folder_path)
         self.input_data = load_input_data_from_folder(input_folder_path)
 
     def process(self):
@@ -105,7 +105,7 @@ class ByComponentProcessor(StandardProcessor):
             component_output.save(self.folder_paths)
 
 
-def get_folder_paths(input_folder_path: Path) -> FolderPaths:
+def create_folder_paths(input_folder_path: Path) -> FolderPaths:
     data_tables_path = input_folder_path / FOLDER_NAME_DATA_TABLES
     csv_results_path = input_folder_path / FOLDER_NAME_CSV
     vtk_results_path = input_folder_path / FOLDER_NAME_VTK
