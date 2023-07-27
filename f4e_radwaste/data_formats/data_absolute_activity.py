@@ -22,6 +22,10 @@ class DataAbsoluteActivity(DataFrameValidator):
     ]
     EXPECTED_COLUMNS = [KEY_ABSOLUTE_ACTIVITY]
 
+    def __init__(self, dataframe: pd.DataFrame):
+        super().__init__(dataframe)
+        self._dataframe = self._dataframe.sort_index()
+
     def get_filtered_dataframe(
         self,
         decay_times: Optional[List[float]] = None,

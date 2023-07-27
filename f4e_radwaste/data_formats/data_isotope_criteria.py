@@ -28,6 +28,7 @@ class DataIsotopeCriteria(DataFrameValidator):
 
     def __init__(self, dataframe: pd.DataFrame):
         super().__init__(dataframe)
+        self._dataframe = self._dataframe.sort_index()
         self.all_isotopes_names = self._get_all_isotopes_names()
         self.relevant_isotopes_names = self._get_relevant_isotopes_names()
 

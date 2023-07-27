@@ -28,5 +28,5 @@ def load_and_process_folder(
 
 
 if __name__ == "__main__":
-    standard_process(Path(r"D:\WORK\test_results"))
+    by_component_process(Path(r"D:\WORK\test_ivvs_05"))
     # standard_process(Path(r"D:\WORK\tryingSimple\tests\old_data\ivvs_cart"))

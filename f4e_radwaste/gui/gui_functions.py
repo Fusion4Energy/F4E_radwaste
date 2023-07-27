@@ -259,9 +259,11 @@ class GUIFunctions:
         clicking print radwaste info button will start as if first we clicked calculate
          radwaste button, and then it will write the info to a file
         """
-        pass
-        # package_activity = self.button_pressed_calculate_radwaste()
-        # package_activity.to_csv(path=PROJECT_PATHS.path_to_data_tables, name="PACKAGE")
+        package_activity = self.button_pressed_calculate_radwaste()
+        package_activity.to_csv(
+            folder_path=self.manager.processor.data_tables_folder_path,
+            file_name="PACKAGE",
+        )
 
     def button_pressed_delete_box(self):
         self.active = False

@@ -15,6 +15,10 @@ class DataMass(DataFrameValidator):
     ]
     EXPECTED_COLUMNS = [KEY_MASS_GRAMS]
 
+    def __init__(self, dataframe: pd.DataFrame):
+        super().__init__(dataframe)
+        self._dataframe = self._dataframe.sort_index()
+
     def get_filtered_dataframe(
         self,
         voxels: Optional[List[int]] = None,
