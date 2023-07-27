@@ -114,6 +114,8 @@ class RadwasteDisplay(QtWidgets.QWidget):
         self.lma_isotopes.setMaximumHeight(100)
         self.relevant_activity = QtWidgets.QLabel("")
         self.total_activity = QtWidgets.QLabel("")
+        self.dose_1_m = QtWidgets.QLabel("")
+        self.contact_dose_rate = QtWidgets.QLabel("")
         self._build_widget(layout)
 
     # noinspection PyArgumentList
@@ -132,6 +134,11 @@ class RadwasteDisplay(QtWidgets.QWidget):
         scrollable_layout.addWidget(self.relevant_activity)
         scrollable_layout.addWidget(QtWidgets.QLabel("Total activity [Bq/g]:"))
         scrollable_layout.addWidget(self.total_activity)
+        scrollable_layout.addWidget(QtWidgets.QLabel("Dose at 1 meter [Sv/h/g]:"))
+        scrollable_layout.addWidget(self.dose_1_m)
+        scrollable_layout.addWidget(QtWidgets.QLabel("Contact dose rate [Sv/h]:"))
+        scrollable_layout.addWidget(self.contact_dose_rate)
+
         spacer = QtWidgets.QSpacerItem(
             1,
             1,
@@ -149,6 +156,7 @@ class RadwasteDisplay(QtWidgets.QWidget):
         scroll.setWidgetResizable(True)
         scroll.setWidget(scrollable_area)
         general_layout.addWidget(scroll)
+
         self.setLayout(general_layout)
         layout.addRow(self)
 
@@ -270,4 +278,8 @@ class ResultsWidget(QtWidgets.QWidget):
         total_activity = collapsed_data.get_total_activity()
         self.radwaste_display.total_activity.setText(f"{total_activity:.2e}")
 
-        self.radwaste_display.total_activity.setText(f"{total_activity:.2e}")
+        dose_1_m = collapsed_data.get_dose_1_m()
+        self.radwaste_display.dose_1_m.setText(f"{dose_1_m:.2e}")
+
+        contact_dose_rate = collapsed_data.get_contact_dose_rate()
+        self.radwaste_display.contact_dose_rate.setText(f"{contact_dose_rate:.2e}")

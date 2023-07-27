@@ -47,3 +47,7 @@ class DataFrameValidator(ABC):
         dataframe = pd.read_hdf(folder_path / f"{cls.__name__}.hdf5", key="dataframe")
         dataframe = pd.DataFrame(dataframe)
         return cls(dataframe)
+
+    @property
+    def n_rows(self):
+        return self._dataframe.shape[0]

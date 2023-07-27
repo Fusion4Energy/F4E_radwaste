@@ -17,7 +17,7 @@ class GUIProcessor:
     def __init__(self, data_tables_folder_path: Path):
         self.data_tables_folder_path: Path = data_tables_folder_path
         self.input_data: InputData = load_input_data_tables(data_tables_folder_path)
-        self.dose_calculator: DoseCalculator = DoseCalculator(
+        self.dose_calculator = DoseCalculator(
             dose_1_m_factors=read_dose_1_m_factors(),
             cdr_factors=read_contact_dose_rate_factors(),
             element_mix_by_material_id=read_element_mixes_of_materials(

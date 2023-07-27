@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List
 
 import pandas as pd
@@ -15,6 +16,13 @@ class DoseCalculator:
     dose_1_m_factors: pd.Series
     cdr_factors: pd.DataFrame
     element_mix_by_material_id: Dict[int, pd.Series]
+
+    def __post_init__(self):
+        df = pd.read_csv(
+            Path(__file__).parents[1] / r"resources/concrete_M200_cdr_factors.csv",
+            index_col=0,
+        )
+        self.concrete_cdr_factors: pd.Series = df["0"]
 
     def calculate_doses(
         self, comp_activity: DataMeshActivity, cdr_factor_columns: List[pd.Series]
@@ -40,6 +48,13 @@ class DoseCalculator:
             cdr_values.append((row * cdr_factors).sum())
 
         return pd.Series(index=activity_df.index, data=cdr_values)
+
+    def calculate_doses_in_concrete(
+        self, comp_activity: DataMeshActivity
+    ) -> DataMeshActivity:
+        cdr_factor_columns = [self.concrete_cdr_factors] * comp_activity.n_rows
+
+        return self.calculate_doses(comp_activity, cdr_factor_columns)
 
     def calculate_cdr_factors_list(
         self, material_id_proportions: List[pd.Series]

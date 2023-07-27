@@ -240,13 +240,17 @@ class GUIFunctions:
         package_activity = input_data.get_collapsed_activity(
             decay_time=decay_time, materials=materials, voxels=voxels_inside
         )
-        pacakge_activity = classify_waste(package_activity, input_data.isotope_criteria)
+
+        package_activity = classify_waste(package_activity, input_data.isotope_criteria)
+
+        dose_calculator = self.manager.processor.dose_calculator
+        package_activity = dose_calculator.calculate_doses_in_concrete(package_activity)
 
         self.manager.main_window.results_widget.update_radwaste_display(
-            pacakge_activity, input_data.isotope_criteria
+            package_activity, input_data.isotope_criteria
         )
 
-        return pacakge_activity
+        return package_activity
 
     @staticmethod
     def get_mask_vtk_cells_inside_box(box, value_grid):

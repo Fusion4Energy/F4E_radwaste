@@ -7,6 +7,8 @@ from f4e_radwaste.constants import (
     KEY_IRAS,
     KEY_RELEVANT_SPECIFIC_ACTIVITY,
     KEY_TOTAL_SPECIFIC_ACTIVITY,
+    KEY_DOSE_1_METER,
+    KEY_CDR,
 )
 from f4e_radwaste.data_formats.data_isotope_criteria import DataIsotopeCriteria
 from f4e_radwaste.data_formats.data_mesh_activity import DataMeshActivity
@@ -39,3 +41,9 @@ class CollapsedData:
 
     def get_total_activity(self) -> float:
         return self.dataframe[KEY_TOTAL_SPECIFIC_ACTIVITY].values[0]
+
+    def get_dose_1_m(self) -> float:
+        return self.dataframe[KEY_DOSE_1_METER].values[0]
+
+    def get_contact_dose_rate(self) -> float:
+        return self.dataframe[KEY_CDR].values[0]
