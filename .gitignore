@@ -6,3 +6,6 @@ old_data
 delete.py
 *.xlsx
 test_1d_benchmark
+build
+*egg-info
+__pycache__
