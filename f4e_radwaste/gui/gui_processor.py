@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from f4e_radwaste.data_formats.data_absolute_activity import DataAbsoluteActivity
@@ -6,7 +7,6 @@ from f4e_radwaste.helpers import format_time_seconds_to_str
 from f4e_radwaste.post_processing.calculate_dose_rates import DoseCalculator
 from f4e_radwaste.post_processing.input_data import InputData
 from f4e_radwaste.readers import isotope_criteria_file
-from f4e_radwaste.readers.aux_material_file import read_element_mixes_of_materials
 from f4e_radwaste.readers.dose_matrix_file import (
     read_dose_1_m_factors,
     read_contact_dose_rate_factors,
@@ -17,12 +17,9 @@ class GUIProcessor:
     def __init__(self, data_tables_folder_path: Path):
         self.data_tables_folder_path: Path = data_tables_folder_path
         self.input_data: InputData = load_input_data_tables(data_tables_folder_path)
-        self.dose_calculator = DoseCalculator(
+        self.dose_calculator = GUIDoseCalculator(
             dose_1_m_factors=read_dose_1_m_factors(),
             cdr_factors=read_contact_dose_rate_factors(),
-            element_mix_by_material_id=read_element_mixes_of_materials(
-                data_tables_folder_path.parent
-            ),
         )
 
         self.make_decay_times_readable_in_activity_df()
@@ -41,3 +38,8 @@ def load_input_data_tables(data_tables_folder_path: Path) -> InputData:
         DataMeshInfo.load(data_tables_folder_path),
         isotope_criteria_file.read_file(),
     )
+
+
+@dataclass
+class GUIDoseCalculator(DoseCalculator):
+    element_mix_by_material_id: None = None
